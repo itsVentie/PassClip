@@ -5,6 +5,8 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use crate::config::AppConfig;
 use crate::crypto::SecureVault;
 use webauthn_rs::{prelude::*, WebauthnBuilder};
+use arboard::Clipboard;
+use std::time::Duration;
 
 #[cfg(windows)]
 use tokio::net::windows::named_pipe::ServerOptions;
@@ -24,6 +26,7 @@ fn get_webauthn() -> Webauthn {
         .build()
         .unwrap()
 }
+
 pub async fn run_server(vault: Arc<Mutex<SecureVault>>) {
     #[cfg(windows)]
     {
@@ -84,7 +87,7 @@ pub async fn run_server(vault: Arc<Mutex<SecureVault>>) {
 async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> IpcResponse {
     if let Ok(request) = serde_json::from_slice::<IpcRequest>(req_bytes) {
         let mut vault = vault.lock().await;
-        let wa = get_webauthn();
+        let _wa = get_webauthn();
 
         match request {
             IpcRequest::GetStatus => IpcResponse::Status {
@@ -94,7 +97,7 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
                 if !vault.has_secret() {
                     return IpcResponse::Error { message: "No secret isolated".to_string() };
                 }
-                match wa.start_passkey_authentication(&[]) {
+                match _wa.start_passkey_authentication(&[]) {
                     Ok((options, auth_state)) => {
                         vault.current_auth = Some(auth_state);
                         IpcResponse::Challenge { options: Box::new(options) }
@@ -103,12 +106,36 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
                 }
             }
             IpcRequest::VerifyAssertion { assertion } => {
-                let auth_state = match vault.current_auth.take() {
+                let _auth_state = match vault.current_auth.take() {
                     Some(state) => state,
                     None => return IpcResponse::Error { message: "No active auth session".to_string() },
                 };
+
                 match vault.reveal() {
-                    Ok(secret) => IpcResponse::Success { secret },
+                    Ok(secret) => {
+                        let secret_to_check = secret.clone();
+                        
+                        let mut previous_content = String::new();
+                        if let Ok(mut clipboard) = Clipboard::new() {
+                            if let Ok(text) = clipboard.get_text() {
+                                previous_content = text;
+                            }
+                        }
+
+                        tokio::spawn(async move {
+                            tokio::time::sleep(Duration::from_secs(30)).await;
+
+                            if let Ok(mut clipboard) = Clipboard::new() {
+                                if let Ok(current_text) = clipboard.get_text() {
+                                    if current_text == secret_to_check {
+                                        let _ = clipboard.set_text(previous_content);
+                                    }
+                                }
+                            }
+                        });
+
+                        IpcResponse::Success { secret }
+                    }
                     Err(_) => IpcResponse::Error { message: "Decryption failed".to_string() },
                 }
             }

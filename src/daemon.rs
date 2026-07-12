@@ -17,7 +17,7 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
     let mut last_content = String::new();
     println!("[DEBUG] Clipboard monitor thread successfully initialized.");
 
-    loop {
+   loop {
         sleep(Duration::from_millis(500));
 
         match clipboard.get_text() {
@@ -29,6 +29,8 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
                 if current_content == last_content {
                     continue;
                 }
+
+                last_content = current_content.clone();
 
                 let entropy = calculate_entropy(&current_content);
                 let len = current_content.len();
@@ -47,6 +49,7 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
                             if v.protect(&current_content).is_ok() {
                                 if clipboard.set_text("").is_ok() {
                                     println!("[+] Clipboard wiped. Data secured.");
+                                    last_content = String::new();
                                 } else {
                                     println!("[ERR] Failed to wipe clipboard");
                                 }
@@ -58,10 +61,8 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
                             println!("[ERR] Vault is locked by another thread");
                         }
                     }
-                    last_content = String::new();
                 } else {
                     println!("[DEBUG] Ignored: does not match high-entropy criteria.");
-                    last_content = String::new();
                 }
             }
             Err(e) => {
