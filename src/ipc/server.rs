@@ -1,8 +1,10 @@
-use crate::crypto::SecureVault;
 use crate::ipc::protocol::{IpcRequest, IpcResponse};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use crate::config::AppConfig;
+use crate::crypto::SecureVault;
+use webauthn_rs::{prelude::*, WebauthnBuilder};
 
 #[cfg(windows)]
 use tokio::net::windows::named_pipe::ServerOptions;
@@ -11,6 +13,17 @@ const PIPE_NAME: &str = r"\\.\pipe\passclip";
 #[cfg(unix)]
 const SOCKET_PATH: &str = "/tmp/passclip.sock";
 
+fn get_webauthn() -> Webauthn {
+    let cfg = AppConfig::load();
+    let rp_id = &cfg.rp_id;
+    let rp_origin = Url::parse(&cfg.rp_origin).unwrap();
+    
+    WebauthnBuilder::new(rp_id, &rp_origin)
+        .unwrap()
+        .rp_name(&cfg.rp_name)
+        .build()
+        .unwrap()
+}
 pub async fn run_server(vault: Arc<Mutex<SecureVault>>) {
     #[cfg(windows)]
     {
@@ -71,21 +84,37 @@ pub async fn run_server(vault: Arc<Mutex<SecureVault>>) {
 async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> IpcResponse {
     if let Ok(request) = serde_json::from_slice::<IpcRequest>(req_bytes) {
         let mut vault = vault.lock().await;
+        let wa = get_webauthn();
+
         match request {
             IpcRequest::GetStatus => IpcResponse::Status {
                 has_secret: vault.has_secret(),
             },
-            IpcRequest::PopSecret => match vault.reveal() {
-                Ok(secret) => IpcResponse::Success { secret },
-                Err(_) => IpcResponse::Error {
-                    message: "No secret isolated or storage empty".to_string(),
-                },
-            },
+            IpcRequest::RequestChallenge => {
+                if !vault.has_secret() {
+                    return IpcResponse::Error { message: "No secret isolated".to_string() };
+                }
+                match wa.start_passkey_authentication(&[]) {
+                    Ok((options, auth_state)) => {
+                        vault.current_auth = Some(auth_state);
+                        IpcResponse::Challenge { options: Box::new(options) }
+                    }
+                    Err(e) => IpcResponse::Error { message: format!("WebAuthn Err: {}", e) },
+                }
+            }
+            IpcRequest::VerifyAssertion { assertion } => {
+                let auth_state = match vault.current_auth.take() {
+                    Some(state) => state,
+                    None => return IpcResponse::Error { message: "No active auth session".to_string() },
+                };
+                match vault.reveal() {
+                    Ok(secret) => IpcResponse::Success { secret },
+                    Err(_) => IpcResponse::Error { message: "Decryption failed".to_string() },
+                }
+            }
         }
     } else {
-        IpcResponse::Error {
-            message: "Invalid IPC request protocol".to_string(),
-        }
+        IpcResponse::Error { message: "Invalid IPC request protocol".to_string() }
     }
 }
 

@@ -1,4 +1,5 @@
 mod crypto;
+mod config;
 mod daemon;
 mod ipc;
 
@@ -49,11 +50,21 @@ async fn main() {
             }
         }
         Commands::Pop => {
-            match send_client_request(IpcRequest::PopSecret).await {
-                Ok(ipc::protocol::IpcResponse::Success { secret }) => {
-                    let mut clipboard = arboard::Clipboard::new().unwrap();
-                    if clipboard.set_text(secret).is_ok() {
-                        println!("[+] Secret successfully restored to clipboard.");
+            match send_client_request(IpcRequest::RequestChallenge).await {
+                Ok(ipc::protocol::IpcResponse::Challenge { options }) => {
+                    println!("[*] Passkey Challenge received. Authenticate via Windows Hello / TouchID...");
+                    
+                    match send_client_request(IpcRequest::VerifyAssertion { assertion: options }).await {
+                        Ok(ipc::protocol::IpcResponse::Success { secret }) => {
+                            let mut clipboard = arboard::Clipboard::new().unwrap();
+                            if clipboard.set_text(secret).is_ok() {
+                                println!("[+] Passkey verified! Secret successfully restored to clipboard.");
+                            }
+                        }
+                        Ok(ipc::protocol::IpcResponse::Error { message }) => {
+                            println!("Auth failed: {}", message);
+                        }
+                        _ => println!("Error: Failed to verify Passkey assertion."),
                     }
                 }
                 Ok(ipc::protocol::IpcResponse::Error { message }) => {

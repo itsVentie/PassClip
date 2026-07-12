@@ -1,14 +1,19 @@
 use serde::{Deserialize, Serialize};
+use webauthn_rs::prelude::RequestChallengeResponse;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum IpcRequest {
-    PopSecret,
     GetStatus,
+    RequestChallenge,
+    VerifyAssertion {
+        assertion: Box<RequestChallengeResponse>,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum IpcResponse {
-    Success { secret: String },
     Status { has_secret: bool },
+    Challenge { options: Box<RequestChallengeResponse> },
+    Success { secret: String },
     Error { message: String },
 }

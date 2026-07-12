@@ -2,6 +2,7 @@ use chacha20poly1305::{
     aead::{Aead, KeyInit},
     XChaCha20Poly1305, XNonce,
 };
+use webauthn_rs::prelude::PasskeyAuthentication;
 use rand::{rngs::OsRng, RngCore};
 use std::collections::HashMap;
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -15,18 +16,20 @@ pub struct SecureVault {
     enc_key: EncryptionKey,
     encrypted_data: Option<Vec<u8>>,
     nonce: Option<[u8; 24]>,
+    pub current_auth: Option<PasskeyAuthentication>,
 }
 
 impl SecureVault {
     pub fn new() -> Self {
-        let mut raw_key = [0u8; 32];
-        OsRng.fill_bytes(&mut raw_key);
-        Self {
-            enc_key: EncryptionKey { key: raw_key },
-            encrypted_data: None,
-            nonce: None,
-        }
+    let mut raw_key = [0u8; 32];
+    OsRng.fill_bytes(&mut raw_key);
+    Self {
+        enc_key: EncryptionKey { key: raw_key },
+        encrypted_data: None,
+        nonce: None,
+        current_auth: None,
     }
+}
 
     pub fn has_secret(&self) -> bool {
         self.encrypted_data.is_some()

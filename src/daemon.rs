@@ -61,7 +61,7 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
                     last_content = String::new();
                 } else {
                     println!("[DEBUG] Ignored: does not match high-entropy criteria.");
-                    last_content = current_content;
+                    last_content = String::new();
                 }
             }
             Err(e) => {
