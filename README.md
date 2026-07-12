@@ -4,11 +4,12 @@ A minimalist, high-security background clipboard manager written in Rust. It aut
 
 ## Features
 
-- **Automated Isolation:** Monitors clipboard and uses Shannon entropy calculation to detect sensitive data.
-- **Zero-Persistence RAM Vault:** Keys and payloads are kept exclusively in memory.
-- **Memory Hardening:** Uses the `PassClip` crate to securely zero-out encryption keys and plaintext buffers upon drop.
-- **Biometric/Hardware Lock:** Authentication via local WebAuthn loopback layer (TouchID, Windows Hello, YubiKey).
-- **Ephemeral Exposure:** Restores secrets to the system clipboard for 10 seconds only, then purges them.
+- **Client-Server Model:** Runs as a lightweight background daemon with an asynchronous cross-platform IPC bridge (Named Pipes on Windows, Unix Domain Sockets on Linux/macOS).
+- **Automated Isolation:** Monitors the system clipboard using a dedicated native thread and triggers Shannon entropy calculations to intercept sensitive leaks.
+- **Zero-Persistence RAM Vault:** Keys and payloads are kept exclusively in memory with no disk footprint.
+- **Memory Hardening:** Implements explicit memory zeroization (`zeroize` crate) for transient buffers and keys upon drop.
+- **Biometric/Hardware Lock:** Authentication via FIDO2/WebAuthn infrastructure (Windows Hello, TouchID, YubiKey).
+- **Ephemeral Exposure:** Safely returns secrets to the clipboard with automated lifecycle management.
 
 ## Installation
 
