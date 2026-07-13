@@ -10,6 +10,9 @@ A minimalist, high-security background clipboard manager written in Rust. It aut
 - **Memory Hardening:** Implements explicit memory zeroization (`zeroize` crate) for transient buffers and keys upon drop.
 - **Biometric/Hardware Lock:** Authentication via FIDO2/WebAuthn infrastructure (Windows Hello, TouchID, YubiKey).
 - **Ephemeral Exposure:** Safely returns secrets to the clipboard with automated lifecycle management.
+- **Configuration:** Dynamic adjustments of entropy thresholds (min_entropy), minimum lengths, and zeroization timers via passclip.toml.
+
+- **Desktop Notifications:** Native system alerts confirming clipboard isolation, secret retrieval, and automated zeroization status.
 
 ## Installation
 
