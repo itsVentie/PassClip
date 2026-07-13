@@ -41,7 +41,8 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
                     len, entropy, has_space
                 );
 
-                if entropy > 4.5 && len > 8 && !has_space {
+                let cfg = crate::config::AppConfig::load();
+                if entropy > cfg.min_entropy && len >= cfg.min_length && !has_space {
                     println!("[!] Criteria matched. Locking vault...");
 
                     match vault.try_lock() {

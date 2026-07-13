@@ -7,6 +7,7 @@ use crate::crypto::SecureVault;
 use webauthn_rs::{prelude::*, WebauthnBuilder};
 use arboard::Clipboard;
 use std::time::Duration;
+use notify_rust::Notification;
 
 #[cfg(windows)]
 use tokio::net::windows::named_pipe::ServerOptions;
@@ -25,6 +26,17 @@ fn get_webauthn() -> Webauthn {
         .rp_name(&cfg.rp_name)
         .build()
         .unwrap()
+}
+
+fn send_notification(summary: &str, body:&str) {
+    let cfg = AppConfig::load();
+    if cfg.enable_notifications {
+        let _ = Notification::new()
+        .summary(summary)
+        .body(body)
+        .appname("PassClip")
+        .show();
+    }
 }
 
 pub async fn run_server(vault: Arc<Mutex<SecureVault>>) {
@@ -122,6 +134,8 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
                             }
                         }
 
+                        send_notification("Secret Restored", "The secret is now in your clipboard");
+
                         tokio::spawn(async move {
                             tokio::time::sleep(Duration::from_secs(30)).await;
 
@@ -129,6 +143,7 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
                                 if let Ok(current_text) = clipboard.get_text() {
                                     if current_text == secret_to_check {
                                         let _ = clipboard.set_text(previous_content);
+                                        send_notification("Clipboard cleared", "The volatile secret has been removed and previous content restored.");
                                     }
                                 }
                             }
