@@ -1,14 +1,15 @@
 use serde::{Deserialize, Serialize};
-use webauthn_rs::prelude::RequestChallengeResponse;
+use webauthn_rs::prelude::*;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum IpcRequest {
     GetStatus,
     RequestChallenge,
     VerifyAssertion {
-        assertion: Box<RequestChallengeResponse>,
+        assertion: PublicKeyCredential,
     },
 }
+
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum IpcResponse {

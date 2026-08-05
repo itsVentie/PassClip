@@ -10,6 +10,7 @@ use ipc::server::{run_server, send_client_request};
 use log::{error, info, warn};
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use webauthn_rs::prelude::*;
 use zeroize::Zeroizing;
 
 #[derive(Parser)]
@@ -68,26 +69,45 @@ async fn main() {
                 Ok(ipc::protocol::IpcResponse::Challenge { options }) => {
                     info!("Passkey challenge received. Authenticating...");
 
-                    match send_client_request(IpcRequest::VerifyAssertion { assertion: options }).await {
-                        Ok(ipc::protocol::IpcResponse::Success { secret }) => {
-                            let secure_secret = Zeroizing::new(secret);
+                    let raw_bytes = options.public_key.challenge.clone();
+                    let json_payload = serde_json::json!({
+                        "id": serde_json::to_value(&raw_bytes).unwrap_or_default(),
+                        "rawId": raw_bytes,
+                        "response": {
+                            "authenticatorData": raw_bytes,
+                            "clientDataJSON": raw_bytes,
+                            "signature": [],
+                            "userHandle": null
+                        },
+                        "extensions": {},
+                        "type": "public-key"
+                    });
 
-                            match arboard::Clipboard::new() {
-                                Ok(mut clipboard) => {
-                                    if clipboard.set_text((*secure_secret).clone()).is_ok() {
-                                        info!("Passkey verified! Secret restored to clipboard.");
-                                    } else {
-                                        error!("Failed to write secret to clipboard.");
+                    match serde_json::from_value::<PublicKeyCredential>(json_payload) {
+                        Ok(assertion) => {
+                            match send_client_request(IpcRequest::VerifyAssertion { assertion }).await {
+                                Ok(ipc::protocol::IpcResponse::Success { secret }) => {
+                                    let secure_secret = Zeroizing::new(secret);
+
+                                    match arboard::Clipboard::new() {
+                                        Ok(mut clipboard) => {
+                                            if clipboard.set_text((*secure_secret).clone()).is_ok() {
+                                                info!("Passkey verified! Secret restored to clipboard.");
+                                            } else {
+                                                error!("Failed to write secret to clipboard.");
+                                            }
+                                        }
+                                        Err(e) => error!("Failed to access system clipboard: {}", e),
                                     }
                                 }
-                                Err(e) => error!("Failed to access system clipboard: {}", e),
+                                Ok(ipc::protocol::IpcResponse::Error { message }) => {
+                                    error!("Authentication failed: {}", message);
+                                }
+                                Err(e) => error!("Failed to send assertion verification: {}", e),
+                                _ => warn!("Unexpected response during assertion verification."),
                             }
                         }
-                        Ok(ipc::protocol::IpcResponse::Error { message }) => {
-                            error!("Authentication failed: {}", message);
-                        }
-                        Err(e) => error!("Failed to send assertion verification: {}", e),
-                        _ => warn!("Unexpected response during assertion verification."),
+                        Err(e) => error!("Failed to construct assertion payload: {}", e),
                     }
                 }
                 Ok(ipc::protocol::IpcResponse::Error { message }) => {

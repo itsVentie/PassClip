@@ -65,7 +65,7 @@ pub async fn run_server(vault: Arc<Mutex<SecureVault>>) {
                 is_first = false;
                 let vault_clone = Arc::clone(&vault);
                 tokio::spawn(async move {
-                    let mut buf = vec![0u8; 4096];
+                    let mut buf = vec![0u8; 8192];
                     if let Ok(n) = server.read(&mut buf).await {
                         if n > 0 {
                             let response = handle_request(&buf[..n], vault_clone).await;
@@ -86,7 +86,7 @@ pub async fn run_server(vault: Arc<Mutex<SecureVault>>) {
             if let Ok((mut stream, _)) = listener.accept().await {
                 let vault_clone = Arc::clone(&vault);
                 tokio::spawn(async move {
-                    let mut buf = vec![0u8; 4096];
+                    let mut buf = vec![0u8; 8192];
                     if let Ok(n) = stream.read(&mut buf).await {
                         if n > 0 {
                             let response = handle_request(&buf[..n], vault_clone).await;
@@ -104,7 +104,7 @@ async fn verify_user_presence() -> bool {
     #[cfg(windows)]
     {
         let prompt = HSTRING::from("PassClip: Подтвердите личность для доступа к секрету");
-        
+
         tokio::task::spawn_blocking(move || {
             match UserConsentVerifier::RequestVerificationAsync(&prompt) {
                 Ok(operation) => match operation.get() {
@@ -150,10 +150,19 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
                     },
                 }
             }
-            IpcRequest::VerifyAssertion { assertion: _ } => {
-                if vault.current_auth.take().is_none() {
+            IpcRequest::VerifyAssertion { assertion } => {
+                let auth_state = match vault.current_auth.take() {
+                    Some(state) => state,
+                    None => {
+                        return IpcResponse::Error {
+                            message: "No active auth session".to_string(),
+                        };
+                    }
+                };
+
+                if let Err(e) = wa.finish_passkey_authentication(&assertion, &auth_state) {
                     return IpcResponse::Error {
-                        message: "No active auth session".to_string(),
+                        message: format!("WebAuthn assertion verification failed: {}", e),
                     };
                 }
 
@@ -212,7 +221,7 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
 
 pub async fn send_client_request(request: IpcRequest) -> Result<IpcResponse, String> {
     let req_bytes = serde_json::to_vec(&request).unwrap();
-    let mut buf = vec![0u8; 4096];
+    let mut buf = vec![0u8; 8192];
 
     #[cfg(windows)]
     {

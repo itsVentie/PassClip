@@ -2,9 +2,9 @@ use chacha20poly1305::{
     aead::{Aead, KeyInit},
     XChaCha20Poly1305, XNonce,
 };
-use webauthn_rs::prelude::PasskeyAuthentication;
 use rand::{rngs::OsRng, RngCore};
 use std::collections::HashMap;
+use webauthn_rs::prelude::PasskeyAuthentication;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[derive(Zeroize, ZeroizeOnDrop)]
@@ -21,15 +21,15 @@ pub struct SecureVault {
 
 impl SecureVault {
     pub fn new() -> Self {
-    let mut raw_key = [0u8; 32];
-    OsRng.fill_bytes(&mut raw_key);
-    Self {
-        enc_key: EncryptionKey { key: raw_key },
-        encrypted_data: None,
-        nonce: None,
-        current_auth: None,
+        let mut raw_key = [0u8; 32];
+        OsRng.fill_bytes(&mut raw_key);
+        Self {
+            enc_key: EncryptionKey { key: raw_key },
+            encrypted_data: None,
+            nonce: None,
+            current_auth: None,
+        }
     }
-}
 
     pub fn has_secret(&self) -> bool {
         self.encrypted_data.is_some()
@@ -50,7 +50,7 @@ impl SecureVault {
     pub fn reveal(&mut self) -> Result<String, ()> {
         let data = self.encrypted_data.take().ok_or(())?;
         let nonce_bytes = self.nonce.take().ok_or(())?;
-        
+
         let cipher = XChaCha20Poly1305::new((&self.enc_key.key).into());
         let nonce = XNonce::from_slice(&nonce_bytes);
 
@@ -74,8 +74,11 @@ pub fn calculate_entropy(s: &str) -> f64 {
         *frequencies.entry(c).or_insert(0) += 1;
     }
     let len = s.len() as f64;
-    frequencies.values().map(|&count| {
-        let p = count as f64 / len;
-        -p * p.log2()
-    }).sum()
+    frequencies
+        .values()
+        .map(|&count| {
+            let p = count as f64 / len;
+            -p * p.log2()
+        })
+        .sum()
 }
