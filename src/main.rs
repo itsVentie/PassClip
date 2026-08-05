@@ -85,19 +85,26 @@ async fn main() {
 
                     match serde_json::from_value::<PublicKeyCredential>(json_payload) {
                         Ok(assertion) => {
-                            match send_client_request(IpcRequest::VerifyAssertion { assertion }).await {
+                            match send_client_request(IpcRequest::VerifyAssertion {
+                                assertion: Box::new(assertion),
+                            })
+                            .await
+                            {
                                 Ok(ipc::protocol::IpcResponse::Success { secret }) => {
                                     let secure_secret = Zeroizing::new(secret);
 
                                     match arboard::Clipboard::new() {
                                         Ok(mut clipboard) => {
-                                            if clipboard.set_text((*secure_secret).clone()).is_ok() {
+                                            if clipboard.set_text((*secure_secret).clone()).is_ok()
+                                            {
                                                 info!("Passkey verified! Secret restored to clipboard.");
                                             } else {
                                                 error!("Failed to write secret to clipboard.");
                                             }
                                         }
-                                        Err(e) => error!("Failed to access system clipboard: {}", e),
+                                        Err(e) => {
+                                            error!("Failed to access system clipboard: {}", e)
+                                        }
                                     }
                                 }
                                 Ok(ipc::protocol::IpcResponse::Error { message }) => {

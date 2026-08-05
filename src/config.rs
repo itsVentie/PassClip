@@ -15,7 +15,7 @@ pub struct AppConfig {
 
 impl Default for AppConfig {
     fn default() -> Self {
-        Self{
+        Self {
             rp_id: "localhost".to_string(),
             rp_origin: "http://localhost".to_string(),
             rp_name: "PassClip Vault".to_string(),

@@ -230,7 +230,10 @@ pub async fn send_client_request(request: IpcRequest) -> Result<IpcResponse, Str
             .open(PIPE_NAME)
             .map_err(|e| format!("Failed to connect to daemon: {}", e))?;
 
-        client.write_all(&req_bytes).await.map_err(|e| e.to_string())?;
+        client
+            .write_all(&req_bytes)
+            .await
+            .map_err(|e| e.to_string())?;
         let n = client.read(&mut buf).await.map_err(|e| e.to_string())?;
         serde_json::from_slice(&buf[..n]).map_err(|e| e.to_string())
     }
@@ -241,7 +244,10 @@ pub async fn send_client_request(request: IpcRequest) -> Result<IpcResponse, Str
             .await
             .map_err(|e| format!("Failed to connect to daemon: {}", e))?;
 
-        stream.write_all(&req_bytes).await.map_err(|e| e.to_string())?;
+        stream
+            .write_all(&req_bytes)
+            .await
+            .map_err(|e| e.to_string())?;
         let n = stream.read(&mut buf).await.map_err(|e| e.to_string())?;
         serde_json::from_slice(&buf[..n]).map_err(|e| e.to_string())
     }
