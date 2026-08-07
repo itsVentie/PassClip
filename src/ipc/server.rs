@@ -205,7 +205,9 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
                             }
                         });
 
-                        IpcResponse::Success { secret }
+                        IpcResponse::Success {
+                            secret: Zeroizing::new(secret),
+                        }
                     }
                     Err(_) => IpcResponse::Error {
                         message: "Decryption failed".to_string(),

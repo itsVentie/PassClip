@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use webauthn_rs::prelude::{CreationChallengeResponse, PublicKeyCredential};
+use webauthn_rs::prelude::{PublicKeyCredential, RequestChallengeResponse};
 use zeroize::Zeroizing;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -15,7 +15,7 @@ pub enum IpcResponse {
         has_secret: bool,
     },
     Challenge {
-        options: Box<CreationChallengeResponse>,
+        options: Box<RequestChallengeResponse>,
     },
     Success {
         secret: Zeroizing<String>,
