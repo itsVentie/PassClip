@@ -3,10 +3,13 @@ use crate::crypto::{calculate_entropy, SecureVault};
 use arboard::Clipboard;
 use log::{error, info, trace, warn};
 use notify_rust::Notification;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread::sleep;
 use std::time::Duration;
 use tokio::sync::Mutex;
+
+pub static MONITOR_PAUSED: AtomicBool = AtomicBool::new(false);
 
 pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
     let mut clipboard = match Clipboard::new() {
@@ -25,6 +28,10 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
     loop {
         sleep(Duration::from_millis(500));
 
+        if MONITOR_PAUSED.load(Ordering::Relaxed) {
+            continue;
+        }
+
         match clipboard.get_text() {
             Ok(current_content) => {
                 last_error = None;
@@ -41,9 +48,7 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
 
                 trace!(
                     "Detected clipboard change. Len: {}, Entropy: {:.2}, Has Space: {}",
-                    len,
-                    entropy,
-                    has_space
+                    len, entropy, has_space
                 );
 
                 if entropy > config.min_entropy && len >= config.min_length && !has_space {
