@@ -103,7 +103,7 @@ pub async fn run_server(vault: Arc<Mutex<SecureVault>>) {
 async fn verify_user_presence() -> bool {
     #[cfg(windows)]
     {
-        let prompt = HSTRING::from("PassClip: Подтвердите личность для доступа к секрету");
+        let prompt = HSTRING::from("PassClip: Confirm your presence to reveal the secret.");
 
         tokio::task::spawn_blocking(move || {
             match UserConsentVerifier::RequestVerificationAsync(&prompt) {

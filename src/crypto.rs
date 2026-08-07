@@ -82,3 +82,20 @@ pub fn calculate_entropy(s: &str) -> f64 {
         })
         .sum()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_entropy_calculation() {
+        let low_entropy = calculate_entropy("aaaaaaa");
+        let high_entropy = calculate_entropy("g8#K!v9$XzP2");
+
+        assert!(
+            high_entropy > low_entropy,
+            "Random string must have higher entropy than repeated char"
+        );
+        assert_eq!(low_entropy, 0.0);
+    }
+}

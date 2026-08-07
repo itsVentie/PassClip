@@ -34,3 +34,28 @@ impl SingleInstanceGuard {
         Ok(path)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_single_instance_lock() {
+        let first_guard = SingleInstanceGuard::acquire();
+        assert!(first_guard.is_ok(), "First instance should acquire lock");
+
+        let second_guard = SingleInstanceGuard::acquire();
+        assert!(
+            second_guard.is_err(),
+            "Second instance must fail to acquire lock"
+        );
+
+        drop(first_guard);
+
+        let third_guard = SingleInstanceGuard::acquire();
+        assert!(
+            third_guard.is_ok(),
+            "Lock should be re-acquireable after first guard is dropped"
+        );
+    }
+}
