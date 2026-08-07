@@ -8,6 +8,7 @@ use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::sync::Mutex;
 use webauthn_rs::{prelude::*, WebauthnBuilder};
+use zeroize::Zeroizing;
 
 #[cfg(windows)]
 use tokio::net::windows::named_pipe::ServerOptions;
@@ -174,12 +175,12 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
 
                 match vault.reveal() {
                     Ok(secret) => {
-                        let secret_to_check = secret.clone();
-                        let mut previous_content = String::new();
+                        let secret_to_check = secret.as_str().to_string();
+                        let mut previous_content = Zeroizing::new(String::new());
 
                         if let Ok(mut clipboard) = Clipboard::new() {
                             if let Ok(text) = clipboard.get_text() {
-                                previous_content = text;
+                                previous_content = Zeroizing::new(text);
                             }
                         }
 
@@ -194,7 +195,7 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
                             if let Ok(mut clipboard) = Clipboard::new() {
                                 if let Ok(current_text) = clipboard.get_text() {
                                     if current_text == secret_to_check {
-                                        let _ = clipboard.set_text(previous_content);
+                                        let _ = clipboard.set_text(previous_content.as_str());
                                         send_notification(
                                             "Clipboard Cleared",
                                             "The volatile secret has been wiped and previous content restored.",

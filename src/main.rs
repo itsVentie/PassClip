@@ -12,7 +12,6 @@ use log::{error, info, warn};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use webauthn_rs::prelude::*;
-use zeroize::Zeroizing;
 
 #[derive(Parser)]
 #[command(name = "passclip")]
@@ -109,12 +108,9 @@ async fn main() {
                             .await
                             {
                                 Ok(ipc::protocol::IpcResponse::Success { secret }) => {
-                                    let secure_secret = Zeroizing::new(secret);
-
                                     match arboard::Clipboard::new() {
                                         Ok(mut clipboard) => {
-                                            if clipboard.set_text((*secure_secret).clone()).is_ok()
-                                            {
+                                            if clipboard.set_text(secret.as_str()).is_ok() {
                                                 info!("Passkey verified! Secret restored to clipboard.");
                                             } else {
                                                 error!("Failed to write secret to clipboard.");
