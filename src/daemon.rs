@@ -8,6 +8,9 @@ use std::thread::sleep;
 use std::time::Duration;
 use tokio::sync::Mutex;
 
+pub mod single_instance;
+pub use single_instance::SingleInstanceGuard;
+
 pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
     let mut clipboard = match Clipboard::new() {
         Ok(cb) => cb,
