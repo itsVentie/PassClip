@@ -5,6 +5,7 @@ mod ipc;
 
 use clap::{Parser, Subcommand};
 use crypto::SecureVault;
+use daemon::{run_monitor, spawn_tray, SingleInstanceGuard};
 use ipc::protocol::IpcRequest;
 use ipc::server::{run_server, send_client_request};
 use log::{error, info, warn};
@@ -38,7 +39,7 @@ async fn main() {
         Commands::Daemon => {
             info!("Initializing PassClip daemon...");
 
-            let _single_instance = match daemon::SingleInstanceGuard::acquire() {
+            let _single_instance = match SingleInstanceGuard::acquire() {
                 Ok(guard) => guard,
                 Err(err) => {
                     error!("{}", err);
@@ -50,12 +51,21 @@ async fn main() {
 
             let monitor_vault = Arc::clone(&vault);
             std::thread::spawn(move || {
-                daemon::run_monitor(monitor_vault);
+                run_monitor(monitor_vault);
             });
 
             info!("IPC server starting up...");
-            run_server(vault).await;
+            let server_vault = Arc::clone(&vault);
+            tokio::spawn(async move {
+                run_server(server_vault).await;
+            });
+
+            info!("Launching system tray...");
+            if let Err(e) = spawn_tray() {
+                error!("System tray encountered an error: {}", e);
+            }
         }
+
         Commands::Status => {
             info!("Querying daemon status...");
             match send_client_request(IpcRequest::GetStatus).await {

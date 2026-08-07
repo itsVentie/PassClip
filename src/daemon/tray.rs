@@ -1,12 +1,11 @@
 use crate::daemon::monitor::MONITOR_PAUSED;
-use image::RgbaImage;
 use log::info;
 use std::sync::atomic::Ordering;
 use tray_icon::menu::{CheckMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tray_icon::{Icon, TrayIconBuilder};
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
 
-pub fn spawn_tray() -> Result<(), Box<dyn std::error::Error>> {
+pub fn spawn_tray() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let event_loop = EventLoopBuilder::new().build()?;
 
     let toggle_item = CheckMenuItem::new("Pause Monitoring", true, false, None);
@@ -18,7 +17,7 @@ pub fn spawn_tray() -> Result<(), Box<dyn std::error::Error>> {
     tray_menu.append(&open_config_item)?;
     tray_menu.append(&PredefinedMenuItem::separator())?;
     tray_menu.append(&exit_item)?;
-    
+
     let icon = create_default_icon();
 
     let _tray_icon = TrayIconBuilder::new()
@@ -29,10 +28,10 @@ pub fn spawn_tray() -> Result<(), Box<dyn std::error::Error>> {
 
     let menu_channel = MenuEvent::receiver();
 
-    event_loop.run(move |_event, _, control_flow| {
-        *control_flow = ControlFlow::WaitUntil(
+    event_loop.run(move |_event, elwt| {
+        elwt.set_control_flow(ControlFlow::WaitUntil(
             std::time::Instant::now() + std::time::Duration::from_millis(100),
-        );
+        ));
 
         if let Ok(event) = menu_channel.try_recv() {
             if event.id == toggle_item.id() {
@@ -43,7 +42,7 @@ pub fn spawn_tray() -> Result<(), Box<dyn std::error::Error>> {
                 let _ = open::that("passclip.toml");
             } else if event.id == exit_item.id() {
                 info!("Exit requested from system tray. Shutting down PassClip daemon...");
-                *control_flow = ControlFlow::Exit;
+                elwt.exit();
                 std::process::exit(0);
             }
         }
@@ -58,7 +57,7 @@ fn create_default_icon() -> Icon {
     let mut buffer = Vec::with_capacity((width * height * 4) as usize);
 
     for _ in 0..(width * height) {
-        buffer.extend_from_slice(&[0, 200, 100, 255]); 
+        buffer.extend_from_slice(&[0, 200, 100, 255]);
     }
 
     Icon::from_rgba(buffer, width, height).expect("Failed to create tray icon")
