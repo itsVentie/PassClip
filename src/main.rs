@@ -36,26 +36,26 @@ async fn main() {
 
     match &cli.command {
         Commands::Daemon => {
-    info!("Initializing PassClip daemon...");
+            info!("Initializing PassClip daemon...");
 
-    let _single_instance = match daemon::SingleInstanceGuard::acquire() {
-        Ok(guard) => guard,
-        Err(err) => {
-            error!("{}", err);
-            std::process::exit(1);
+            let _single_instance = match daemon::SingleInstanceGuard::acquire() {
+                Ok(guard) => guard,
+                Err(err) => {
+                    error!("{}", err);
+                    std::process::exit(1);
+                }
+            };
+
+            let vault = Arc::new(Mutex::new(SecureVault::new()));
+
+            let monitor_vault = Arc::clone(&vault);
+            std::thread::spawn(move || {
+                daemon::run_monitor(monitor_vault);
+            });
+
+            info!("IPC server starting up...");
+            run_server(vault).await;
         }
-    };
-
-    let vault = Arc::new(Mutex::new(SecureVault::new()));
-
-    let monitor_vault = Arc::clone(&vault);
-    std::thread::spawn(move || {
-        daemon::run_monitor(monitor_vault);
-    });
-
-    info!("IPC server starting up...");
-    run_server(vault).await;
-}
         Commands::Status => {
             info!("Querying daemon status...");
             match send_client_request(IpcRequest::GetStatus).await {
