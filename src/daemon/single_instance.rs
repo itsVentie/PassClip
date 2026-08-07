@@ -3,7 +3,7 @@ use std::fs::{File, OpenOptions};
 use std::path::PathBuf;
 
 pub struct SingleInstanceGuard {
-    _lock: RwLock<File>,
+    _file: File,
 }
 
 impl SingleInstanceGuard {
@@ -20,9 +20,11 @@ impl SingleInstanceGuard {
 
         let mut lock = RwLock::new(file);
 
-        match lock.try_write() {
-            Ok(_guard) => Ok(Self { _lock: lock }),
-            Err(_) => Err("Another instance of PassClip daemon is already running.".to_string()),
+        if lock.try_write().is_ok() {
+            let file = lock.into_inner();
+            Ok(Self { _file: file })
+        } else {
+            Err("Another instance of PassClip daemon is already running.".to_string())
         }
     }
 
