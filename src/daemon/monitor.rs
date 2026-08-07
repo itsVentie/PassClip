@@ -41,7 +41,9 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
 
                 trace!(
                     "Detected clipboard change. Len: {}, Entropy: {:.2}, Has Space: {}",
-                    len, entropy, has_space
+                    len,
+                    entropy,
+                    has_space
                 );
 
                 if entropy > config.min_entropy && len >= config.min_length && !has_space {
