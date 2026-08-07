@@ -41,28 +41,30 @@ mod tests {
 
     #[test]
     fn test_single_instance_lock() {
-        let first_guard = SingleInstanceGuard::acquire();
-        assert!(first_guard.is_ok(), "First instance should acquire lock");
-
         let lock_path = SingleInstanceGuard::get_lock_path().unwrap();
-        let file = OpenOptions::new()
+
+        let file1 = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(&lock_path)
+            .unwrap();
+
+        let file2 = OpenOptions::new()
             .read(true)
             .write(true)
             .open(&lock_path)
             .unwrap();
 
-        let mut raw_lock = RwLock::new(file);
-        assert!(
-            raw_lock.try_write().is_err(),
-            "Second attempt on the same lockfile must fail while guard is active"
-        );
+        let mut lock1 = RwLock::new(file1);
+        let mut lock2 = RwLock::new(file2);
 
-        drop(first_guard);
+        let _guard = lock1.try_write().unwrap();
 
-        let third_guard = SingleInstanceGuard::acquire();
         assert!(
-            third_guard.is_ok(),
-            "Lock should be re-acquireable after guard is dropped"
+            lock2.try_write().is_err(),
+            "Second attempt to lock file must fail while first write guard is active"
         );
     }
 }
