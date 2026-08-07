@@ -12,28 +12,28 @@ A minimalist, high-security background clipboard manager written in Rust. It aut
 - **Memory Hardening:** Explicit memory zeroization (`zeroize` crate) guarantees that transient buffers and cryptographic keys are wiped upon `Drop`.
 - **Hardware/Biometric Lock:** Integrated OS consent verification (Windows Hello, TouchID) and FIDO2/WebAuthn authentication stack.
 - **Ephemeral Clipboard Exposure:** Restores secrets to the clipboard on demand and automatically wipes/restores previous clipboard contents after a 30-second timer.
+- **System Tray Management:** Minimalist system tray icon for seamless background lifecycle control and quick action toggles.
+- **Single-Instance Enforcement:** Atomic IPC/file socket lock prevents concurrent daemon execution.
 - **Desktop Notifications:** Native OS toasts alerting on isolation, retrieval, and auto-wipe lifecycle events.
 
 ---
 
 ## Architecture & Data Flow
 
-
-```
-
+```text
 ┌─────────────────────────────────────────────────────────┐
-│                   System Clipboard                      │
+│                    System Clipboard                     │
 └─────────────┬─────────────────────────────▲─────────────┘
-│ Monitors                    │ Ephemeral Restore
-▼                             │ (30s auto-wipe)
-┌──────────────────────────┐   IPC Bridge   │
+              │ Monitors                    │ Ephemeral Restore
+              ▼                             │ (30s auto-wipe)
+┌──────────────────────────┐    IPC Bridge  │
 │   PassClip Daemon        ├────────────────┤
-│   - Shannon Entropy Check│  (Named Pipe / │
-│   - XChaCha20-Poly1305   │  Unix Socket)  │
+│   - Shannon Entropy Check│   (Named Pipe /│
+│   - XChaCha20-Poly1305   │    Unix Socket)│
 │   - In-Memory Vault      │                │
 └─────────────▲────────────┘                │
-│ Authentication              │
-│ (Windows Hello / FIDO2)     │
+              │ Authentication              │
+              │ (Windows Hello / FIDO2)     │
 ┌─────────────┴────────────┐                │
 │   PassClip CLI           ├────────────────┘
 │   `passclip pop`         │ Requests Secret
@@ -45,8 +45,8 @@ A minimalist, high-security background clipboard manager written in Rust. It aut
 
 ## Prerequisites
 
-- **Rust Toolchain:** Stable release (1.75+)
-- **OS Support:** Windows 10/11 (with Windows Hello enabled) or Linux/macOS.
+* **Rust Toolchain:** Stable release (1.75+)
+* **OS Support:** Windows 10/11 (with Windows Hello enabled) or Linux/macOS.
 
 ---
 
@@ -154,7 +154,7 @@ enable_notifications = true
 
 | Command | Description |
 | --- | --- |
-| `passclip daemon` | Starts the background service, clipboard monitor, and IPC server. |
+| `passclip daemon` | Starts the background service, clipboard monitor, system tray, and IPC server. |
 | `passclip status` | Queries the daemon to check if a secret is currently held in the vault. |
 | `passclip pop` | Requests authentication challenge and restores the secret to the clipboard. |
 | `passclip --help` | Prints the standard CLI help message and version info. |
@@ -166,10 +166,60 @@ enable_notifications = true
 * **No Disk I/O:** PassClip does not write credentials, keys, or logs to disk.
 * **Process Isolation:** The daemon holds the master key and payload in zeroized memory. External processes cannot access secrets without passing the IPC challenge.
 * **Volatile Lifespans:** Restored secrets exist in the active OS clipboard buffer for a maximum of 30 seconds before explicit zeroization.
+* **Memory Hardening:** Heap memory containing sensitive structs (`Zeroizing<String>`) is overwritten with zeroes immediately upon out-of-scope drop.
+
+---
+
+## Project Roadmap
+
+<details>
+<summary><b>Phase 1: Core Engine & Volatile Storage (v0.1.0-alpha)</b></summary>
+
+* [x] Implement in-memory RAM vault using `XChaCha20-Poly1305` authenticated encryption.
+* [x] Build Shannon entropy calculator for automatic sensitive string detection.
+* [x] Create background loop monitoring system clipboard events without high CPU overhead.
+* [x] Integrate `zeroize` crate to clear keys and plaintext buffers upon drop.
+</details>
+
+<details>
+<summary><b>Phase 2: Inter-Process Communication & Controls</b></summary>
+
+* [x] Implement asynchronous cross-platform IPC bridge (#1)
+  * [x] Named Pipes for Windows platform.
+  * [x] Unix Domain Sockets for Linux and macOS.
+* [x] Build CLI client with `daemon`, `status`, and `pop` subcommands.
+* [x] Implement runtime configuration loader (`config.toml`) and desktop notification lifecycle hooks (#4).
+* [x] Implement single-instance process lock to prevent concurrent daemon conflicts (#6).
+</details>
+
+<details>
+<summary><b>Phase 3: Hardware Authentication & Vault Restoration</b></summary>
+
+* [x] Integrate WebAuthn/FIDO2 authentication stack into IPC request protocol (#2).
+* [x] Build daemon-side WebAuthn assertion verification layer (#5).
+* [x] Add OS consent verification fallback (Windows Hello / TouchID).
+* [x] Implement ephemeral clipboard restoration with an automatic 30-second wipe timer (#3).
+</details>
+
+<details>
+<summary><b>Phase 4: System Integration & Memory Security Hardening</b></summary>
+
+* [x] Resolve telemetry/logging noise in the main clipboard monitoring loop (#7).
+* [x] Add a native system tray icon for background lifecycle management and UI control (#8).
+* [x] Secure transient allocations across client/server IPC handlers using `Zeroizing<T>` (#9).
+</details>
+
+<details>
+<summary><b>Phase 5: Future Enhancements (Post-v0.1.0)</b></summary>
+
+* [ ] Multi-slot secret vault (support for temporary stack of high-entropy clips).
+* [ ] Configurable regex pattern matching alongside Shannon entropy calculation.
+* [ ] Native Linux PAM / macOS LocalAuthentication bindings for `pop` consent.
+* [ ] Shell autocompletion scripts (Bash, Zsh, Fish, PowerShell).
+</details>
 
 ---
 
 ## License
 
 Distributed under the Apache-2.0 License. See `LICENSE` for details.
-
