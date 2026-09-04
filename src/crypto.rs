@@ -16,7 +16,8 @@ impl SecureVault {
             current_auth: None,
         }
     }
-
+    
+    #[allow(dead_code)]
     pub fn has_secret(&self) -> bool {
         !self.multi_vault.is_empty()
     }
