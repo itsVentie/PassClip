@@ -197,7 +197,7 @@ enable_notifications = true
 
 * [x] Integrate WebAuthn/FIDO2 authentication stack into IPC request protocol (#2).
 * [x] Build daemon-side WebAuthn assertion verification layer (#5).
-* [x] Add OS consent verification fallback (Windows Hello / TouchID).
+* [x] Add OS consent verification fallback (Windows Hello / TouchID / PAM).
 * [x] Implement ephemeral clipboard restoration with an automatic 30-second wipe timer (#3).
 </details>
 
@@ -210,12 +210,21 @@ enable_notifications = true
 </details>
 
 <details>
-<summary><b>Phase 5: Future Enhancements (Post-v0.1.0)</b></summary>
+<summary><b>Phase 5: Advanced Engine Enhancements (Post-v0.1.0)</b></summary>
 
 * [x] Multi-slot secret vault (support for temporary stack of high-entropy clips).
 * [x] Configurable regex pattern matching alongside Shannon entropy calculation.
 * [x] Native Linux PAM / macOS LocalAuthentication bindings for `pop` consent.
 * [x] Shell autocompletion scripts (Bash, Zsh, Fish, PowerShell).
+</details>
+
+<details>
+<summary><b>Phase 6: Native Desktop Interface & Advanced Control (v0.2.0)</b></summary>
+
+* [ ] Build native desktop GUI using Tauri v2 and Preact.
+* [ ] Implement interactive multi-slot vault viewer and manual revocation controls.
+* [ ] Add visual configuration settings panel (entropy thresholds, timers).
+* [ ] Seamless system tray menu integration with direct UI window toggling.
 </details>
 
 ---
