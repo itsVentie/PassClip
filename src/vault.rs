@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[derive(Clone, Zeroize, ZeroizeOnDrop)]
@@ -74,6 +74,19 @@ impl MultiSlotVault {
                 len: s.secret.len(),
             })
             .collect()
+    }
+
+    pub fn cleanup_expired(&mut self, max_age: Duration) {
+        let now = SystemTime::now();
+        self.slots.retain(|slot| {
+            now.duration_since(slot.timestamp)
+                .map(|elapsed| elapsed < max_age)
+                .unwrap_or(false)
+        });
+    }
+
+    pub fn clear(&mut self) {
+        self.slots.clear();
     }
 
     pub fn is_empty(&self) -> bool {

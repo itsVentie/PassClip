@@ -1,5 +1,6 @@
 use crate::vault::MultiSlotVault;
 use std::collections::HashMap;
+use std::time::Duration;
 use webauthn_rs::prelude::PasskeyAuthentication;
 
 pub struct SecureVault {
@@ -16,10 +17,30 @@ impl SecureVault {
             current_auth: None,
         }
     }
-    
+
     #[allow(dead_code)]
     pub fn has_secret(&self) -> bool {
         !self.multi_vault.is_empty()
+    }
+
+    pub fn cleanup_expired(&mut self, max_age: Duration) {
+        self.multi_vault.cleanup_expired(max_age);
+        if self.multi_vault.is_empty() {
+            self.target_slot_id = None;
+            self.current_auth = None;
+        }
+    }
+
+    pub fn zeroize(&mut self) {
+        self.multi_vault.clear();
+        self.target_slot_id = None;
+        self.current_auth = None;
+    }
+}
+
+impl Default for SecureVault {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
