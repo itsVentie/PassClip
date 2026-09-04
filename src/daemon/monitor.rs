@@ -58,21 +58,19 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
 
                     match vault.try_lock() {
                         Ok(mut v) => {
-                            if v.multi_vault.push(current_content.clone()).is_ok() {
-                                if clipboard.set_text("").is_ok() {
-                                    last_content.clear();
-                                    info!("Clipboard wiped. Data secured in vault.");
+                            let _slot_id = v.multi_vault.push(current_content.clone(), entropy as f32);
+                            
+                            if clipboard.set_text("").is_ok() {
+                                last_content.clear();
+                                info!("Clipboard wiped. Data secured in vault.");
 
-                                    let _ = Notification::new()
-                                        .summary("PassClip Security")
-                                        .body("High-entropy secret intercepted and secured.")
-                                        .timeout(Duration::from_secs(3))
-                                        .show();
-                                } else {
-                                    error!("Failed to wipe clipboard contents");
-                                }
+                                let _ = Notification::new()
+                                    .summary("PassClip Security")
+                                    .body("High-entropy secret intercepted and secured.")
+                                    .timeout(Duration::from_secs(3))
+                                    .show();
                             } else {
-                                error!("Encryption failed inside vault");
+                                error!("Failed to wipe clipboard contents");
                             }
                         }
                         Err(_) => {
