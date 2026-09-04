@@ -1,67 +1,24 @@
-use chacha20poly1305::{
-    aead::{Aead, KeyInit},
-    XChaCha20Poly1305, XNonce,
-};
-use rand::{rngs::OsRng, RngCore};
+use crate::vault::MultiSlotVault;
 use std::collections::HashMap;
 use webauthn_rs::prelude::PasskeyAuthentication;
-use zeroize::{Zeroize, ZeroizeOnDrop};
-
-#[derive(Zeroize, ZeroizeOnDrop)]
-pub struct EncryptionKey {
-    pub key: [u8; 32],
-}
 
 pub struct SecureVault {
-    enc_key: EncryptionKey,
-    encrypted_data: Option<Vec<u8>>,
-    nonce: Option<[u8; 24]>,
+    pub multi_vault: MultiSlotVault,
+    pub target_slot_id: Option<u32>,
     pub current_auth: Option<PasskeyAuthentication>,
 }
 
 impl SecureVault {
     pub fn new() -> Self {
-        let mut raw_key = [0u8; 32];
-        OsRng.fill_bytes(&mut raw_key);
         Self {
-            enc_key: EncryptionKey { key: raw_key },
-            encrypted_data: None,
-            nonce: None,
+            multi_vault: MultiSlotVault::new(5),
+            target_slot_id: None,
             current_auth: None,
         }
     }
 
     pub fn has_secret(&self) -> bool {
-        self.encrypted_data.is_some()
-    }
-
-    pub fn protect(&mut self, secret: &str) -> Result<(), chacha20poly1305::Error> {
-        let cipher = XChaCha20Poly1305::new((&self.enc_key.key).into());
-        let mut nonce_bytes = [0u8; 24];
-        OsRng.fill_bytes(&mut nonce_bytes);
-        let nonce = XNonce::from_slice(&nonce_bytes);
-
-        let ciphertext = cipher.encrypt(nonce, secret.as_bytes())?;
-        self.encrypted_data = Some(ciphertext);
-        self.nonce = Some(nonce_bytes);
-        Ok(())
-    }
-
-    pub fn reveal(&mut self) -> Result<String, ()> {
-        let data = self.encrypted_data.take().ok_or(())?;
-        let nonce_bytes = self.nonce.take().ok_or(())?;
-
-        let cipher = XChaCha20Poly1305::new((&self.enc_key.key).into());
-        let nonce = XNonce::from_slice(&nonce_bytes);
-
-        if let Ok(mut decrypted_bytes) = cipher.decrypt(nonce, data.as_slice()) {
-            if let Ok(plaintext) = String::from_utf8(decrypted_bytes.clone()) {
-                decrypted_bytes.zeroize();
-                return Ok(plaintext);
-            }
-            decrypted_bytes.zeroize();
-        }
-        Err(())
+        !self.multi_vault.is_empty()
     }
 }
 

@@ -73,8 +73,15 @@ async fn main() {
         Commands::Status => {
             info!("Querying daemon status...");
             match send_client_request(IpcRequest::GetStatus).await {
-                Ok(ipc::protocol::IpcResponse::Status { has_secret }) => {
-                    info!("Vault contains secret: {}", has_secret);
+                Ok(ipc::protocol::IpcResponse::Status {
+                    has_secret,
+                    count,
+                    max_slots,
+                }) => {
+                    info!(
+                        "Vault contains secret: {} ({}/{} slots occupied)",
+                        has_secret, count, max_slots
+                    );
                 }
                 Ok(ipc::protocol::IpcResponse::Error { message }) => {
                     error!("Daemon returned error: {}", message);
@@ -88,7 +95,28 @@ async fn main() {
 
         Commands::List => {
             info!("Querying isolated slots metadata...");
-
+            match send_client_request(IpcRequest::List).await {
+                Ok(ipc::protocol::IpcResponse::List { slots }) => {
+                    if slots.is_empty() {
+                        info!("No isolated secrets in vault.");
+                    } else {
+                        info!("Active isolated secret slots:");
+                        for slot in slots {
+                            info!(
+                                "  Slot #{}: len={}, source={}, created_at={}",
+                                slot.id, slot.len, slot.source_app, slot.created_at
+                            );
+                        }
+                    }
+                }
+                Ok(ipc::protocol::IpcResponse::Error { message }) => {
+                    error!("Daemon returned error: {}", message);
+                }
+                Err(e) => {
+                    error!("Failed to communicate with daemon: {}", e);
+                }
+                _ => warn!("Received unexpected response from daemon."),
+            }
         }
 
         Commands::Pop { id } => {
@@ -96,7 +124,7 @@ async fn main() {
                 "Initiating challenge request for slot {:?}...",
                 id.unwrap_or(0)
             );
-            match send_client_request(IpcRequest::RequestChallenge).await {
+            match send_client_request(IpcRequest::RequestChallenge { slot_id: *id }).await {
                 Ok(ipc::protocol::IpcResponse::Challenge { options }) => {
                     info!("Passkey challenge received. Authenticating...");
 
