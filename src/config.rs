@@ -6,8 +6,8 @@ use std::path::PathBuf;
 pub struct AppConfig {
     pub rp_id: String,
     pub rp_origin: String,
-    pub rp_name: String,
     pub max_slots: usize,
+    pub rp_name: String,
     pub min_entropy: f64,
     pub min_length: usize,
     pub zeroize_timeout_secs: u64,
