@@ -55,7 +55,7 @@ A minimalist, high-security background clipboard manager written in Rust. It aut
 Clone the repository and build the release binary:
 
 ```bash
-git clone [https://github.com/itsVentie/PassClip.git](https://github.com/itsVentie/PassClip.git)
+git clone https://github.com/itsVentie/PassClip.git
 cd PassClip
 cargo build --release
 
