@@ -82,7 +82,10 @@ impl RulesConfig {
 
         match fs::read_to_string(&path) {
             Ok(content) => toml::from_str(&content).unwrap_or_else(|e| {
-                warn!("Failed to parse rules.toml: {}. Falling back to defaults.", e);
+                warn!(
+                    "Failed to parse rules.toml: {}. Falling back to defaults.",
+                    e
+                );
                 Self::default()
             }),
             Err(_) => Self::default(),

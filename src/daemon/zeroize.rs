@@ -5,7 +5,7 @@ use tokio::sync::Mutex;
 use tokio::time::sleep;
 
 pub fn start_zeroize_worker(vault: Arc<Mutex<SecureVault>>) {
-    let timeout_secs = 600; 
+    let timeout_secs = 600;
     let max_age = Duration::from_secs(timeout_secs);
     let check_interval = Duration::from_secs((timeout_secs / 2).max(1));
 

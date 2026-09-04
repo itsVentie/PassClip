@@ -30,7 +30,8 @@ impl SecureVault {
             self.current_auth = None;
         }
     }
-
+    
+    #[allow(dead_code)]
     pub fn zeroize(&mut self) {
         self.multi_vault.clear();
         self.target_slot_id = None;

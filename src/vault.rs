@@ -84,7 +84,8 @@ impl MultiSlotVault {
                 .unwrap_or(false)
         });
     }
-
+    
+    #[allow(dead_code)]
     pub fn clear(&mut self) {
         self.slots.clear();
     }
