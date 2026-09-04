@@ -6,12 +6,14 @@ mod ipc;
 mod rules;
 mod vault;
 
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
+use clap_complete::{generate, Shell};
 use crypto::SecureVault;
 use daemon::{run_monitor, spawn_tray, SingleInstanceGuard};
 use ipc::protocol::IpcRequest;
 use ipc::server::{run_server, send_client_request};
 use log::{error, info, warn};
+use std::io;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use webauthn_rs::prelude::*;
@@ -33,6 +35,11 @@ enum Commands {
         id: Option<u32>,
     },
     Status,
+    /// Generate shell autocompletion scripts
+    Completions {
+        #[arg(value_enum)]
+        shell: Shell,
+    },
 }
 
 #[tokio::main]
@@ -59,6 +66,9 @@ async fn main() {
             std::thread::spawn(move || {
                 run_monitor(monitor_vault);
             });
+
+            let zeroize_vault = Arc::clone(&vault);
+            daemon::start_zeroize_worker(zeroize_vault);
 
             info!("IPC server starting up...");
             let server_vault = Arc::clone(&vault);
@@ -170,7 +180,7 @@ async fn main() {
                                             }
                                         }
                                         Err(e) => {
-                                            error!("Failed to access system clipboard: {}", e)
+                                            error!("Failed to access system clipboard: {}", e);
                                         }
                                     }
                                 }
@@ -190,6 +200,12 @@ async fn main() {
                 Err(e) => error!("Failed to reach daemon: {}", e),
                 _ => warn!("Unexpected IPC challenge response."),
             }
+        }
+
+        Commands::Completions { shell } => {
+            let mut cmd = Cli::command();
+            let bin_name = cmd.get_name().to_string();
+            generate(*shell, &mut cmd, bin_name, &mut io::stdout());
         }
     }
 }
