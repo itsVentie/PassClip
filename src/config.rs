@@ -12,18 +12,6 @@ pub struct AppConfig {
     pub min_length: usize,
     pub zeroize_timeout_secs: u64,
     pub enable_notifications: bool,
-    #[serde(default = "default_regex_patterns")]
-    pub regex_patterns: Vec<String>,
-}
-
-fn default_regex_patterns() -> Vec<String> {
-    vec![
-        r"AKIA[0-9A-Z]{16}".to_string(),                          // AWS Access Key
-        r"ghp_[a-zA-Z0-9]{36}".to_string(),                      // GitHub Personal Access Token
-        r"glpat-[a-zA-Z0-9\-]{20}".to_string(),                   // GitLab Personal Access Token
-        r"-----BEGIN [A-Z ]+ PRIVATE KEY-----".to_string(),       // PEM Private Key
-        r"eyJhbGciOiJSUzI1NiIsI".to_string(),                    // JWT Header
-    ]
 }
 
 impl Default for AppConfig {
@@ -37,7 +25,6 @@ impl Default for AppConfig {
             min_length: 8,
             zeroize_timeout_secs: 30,
             enable_notifications: true,
-            regex_patterns: default_regex_patterns(),
         }
     }
 }

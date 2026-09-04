@@ -1,5 +1,6 @@
 use crate::config::AppConfig;
 use crate::crypto::{calculate_entropy, SecureVault};
+use crate::rules::RulesConfig;
 use arboard::Clipboard;
 use log::{error, info, trace, warn};
 use notify_rust::Notification;
@@ -24,15 +25,18 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
     let mut last_content = String::new();
     let mut last_error: Option<String> = None;
     let config = AppConfig::load();
+    let rules_config = RulesConfig::load();
 
-    let regex_set = RegexSet::new(&config.regex_patterns).unwrap_or_else(|e| {
+    let patterns = rules_config.compile_patterns();
+    let regex_set = RegexSet::new(&patterns).unwrap_or_else(|e| {
         error!("Failed to compile regex patterns: {}", e);
         RegexSet::empty()
     });
 
     info!(
-        "Clipboard monitor thread initialized with {} active regex rules.",
-        config.regex_patterns.len()
+        "Clipboard monitor thread initialized with {} active rules (version {}).",
+        rules_config.rules.len(),
+        rules_config.version
     );
 
     loop {

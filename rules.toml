@@ -1,0 +1,21 @@
+version = 1
+
+[[rules]]
+name = "AWS Access Key"
+pattern = "AKIA[0-9A-Z]{16}"
+
+[[rules]]
+name = "GitHub Personal Access Token"
+pattern = "ghp_[a-zA-Z0-9]{36}"
+
+[[rules]]
+name = "GitLab Personal Access Token"
+pattern = "glpat-[a-zA-Z0-9\\-]{20}"
+
+[[rules]]
+name = "PEM Private Key"
+pattern = "-----BEGIN [A-Z ]+ PRIVATE KEY-----"
+
+[[rules]]
+name = "JWT Header"
+pattern = "eyJhbGciOiJSUzI1NiIsI"

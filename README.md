@@ -213,7 +213,7 @@ enable_notifications = true
 <summary><b>Phase 5: Future Enhancements (Post-v0.1.0)</b></summary>
 
 * [x] Multi-slot secret vault (support for temporary stack of high-entropy clips).
-* [ ] Configurable regex pattern matching alongside Shannon entropy calculation.
+* [x] Configurable regex pattern matching alongside Shannon entropy calculation.
 * [ ] Native Linux PAM / macOS LocalAuthentication bindings for `pop` consent.
 * [ ] Shell autocompletion scripts (Bash, Zsh, Fish, PowerShell).
 </details>
