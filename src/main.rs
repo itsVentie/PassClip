@@ -2,6 +2,7 @@ mod config;
 mod crypto;
 mod daemon;
 mod ipc;
+mod vault;
 
 use clap::{Parser, Subcommand};
 use crypto::SecureVault;
