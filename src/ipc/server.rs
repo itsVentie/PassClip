@@ -131,14 +131,22 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
 
         match request {
             IpcRequest::GetStatus => IpcResponse::Status {
-                has_secret: vault.has_secret(),
+                has_secret: !vault.multi_vault.is_empty(),
+                count: vault.multi_vault.len(),
+                max_slots: vault.multi_vault.max_slots(),
             },
-            IpcRequest::RequestChallenge => {
-                if !vault.has_secret() {
+            IpcRequest::List => IpcResponse::List {
+                slots: vault.multi_vault.list_metadata(),
+            },
+            IpcRequest::RequestChallenge { slot_id } => {
+                if vault.multi_vault.is_empty() {
                     return IpcResponse::Error {
                         message: "No secret isolated".to_string(),
                     };
                 }
+
+                vault.target_slot_id = slot_id;
+
                 match wa.start_passkey_authentication(&[]) {
                     Ok((options, auth_state)) => {
                         vault.current_auth = Some(auth_state);
@@ -173,9 +181,14 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
                     };
                 }
 
-                match vault.reveal() {
-                    Ok(secret) => {
-                        let secret_to_check = secret.as_str().to_string();
+                let slot = match vault.target_slot_id.take() {
+                    Some(id) => vault.multi_vault.pop_by_id(id),
+                    None => vault.multi_vault.pop_latest(),
+                };
+
+                match slot {
+                    Some(vault_slot) => {
+                        let secret_to_check = vault_slot.secret.clone();
                         let mut previous_content = Zeroizing::new(String::new());
 
                         if let Ok(mut clipboard) = Clipboard::new() {
@@ -186,7 +199,7 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
 
                         send_notification(
                             "Secret Restored",
-                            "The secret is now in your clipboard.",
+                            &format!("Slot #{} restored to clipboard.", vault_slot.id),
                         );
 
                         tokio::spawn(async move {
@@ -206,11 +219,11 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
                         });
 
                         IpcResponse::Success {
-                            secret: Zeroizing::new(secret),
+                            secret: Zeroizing::new(vault_slot.secret),
                         }
                     }
-                    Err(_) => IpcResponse::Error {
-                        message: "Decryption failed".to_string(),
+                    None => IpcResponse::Error {
+                        message: "Requested secret slot not found or expired".to_string(),
                     },
                 }
             }
