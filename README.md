@@ -215,7 +215,7 @@ enable_notifications = true
 * [x] Multi-slot secret vault (support for temporary stack of high-entropy clips).
 * [x] Configurable regex pattern matching alongside Shannon entropy calculation.
 * [x] Native Linux PAM / macOS LocalAuthentication bindings for `pop` consent.
-* [ ] Shell autocompletion scripts (Bash, Zsh, Fish, PowerShell).
+* [x] Shell autocompletion scripts (Bash, Zsh, Fish, PowerShell).
 </details>
 
 ---
