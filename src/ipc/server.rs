@@ -219,7 +219,7 @@ async fn handle_request(req_bytes: &[u8], vault: Arc<Mutex<SecureVault>>) -> Ipc
                         });
 
                         IpcResponse::Success {
-                            secret: Zeroizing::new(vault_slot.secret),
+                            secret: Zeroizing::new(vault_slot.secret.clone()),
                         }
                     }
                     None => IpcResponse::Error {

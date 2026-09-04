@@ -58,7 +58,7 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
 
                     match vault.try_lock() {
                         Ok(mut v) => {
-                            if v.protect(&current_content).is_ok() {
+                            if v.multi_vault.push(current_content.clone()).is_ok() {
                                 if clipboard.set_text("").is_ok() {
                                     last_content.clear();
                                     info!("Clipboard wiped. Data secured in vault.");
