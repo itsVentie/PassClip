@@ -25,7 +25,11 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Daemon,
-    Pop,
+    List,
+    Pop {
+        #[arg(short, long)]
+        id: Option<u32>,
+    },
     Status,
 }
 
@@ -81,8 +85,17 @@ async fn main() {
                 _ => warn!("Received unexpected response from daemon."),
             }
         }
-        Commands::Pop => {
-            info!("Initiating challenge request...");
+
+        Commands::List => {
+            info!("Querying isolated slots metadata...");
+
+        }
+
+        Commands::Pop { id } => {
+            info!(
+                "Initiating challenge request for slot {:?}...",
+                id.unwrap_or(0)
+            );
             match send_client_request(IpcRequest::RequestChallenge).await {
                 Ok(ipc::protocol::IpcResponse::Challenge { options }) => {
                     info!("Passkey challenge received. Authenticating...");
