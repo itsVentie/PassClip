@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+regex = "1.10"
 tray-icon = "0.19"
 winit = "0.29"
 image = "0.24"

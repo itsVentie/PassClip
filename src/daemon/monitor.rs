@@ -3,6 +3,7 @@ use crate::crypto::{calculate_entropy, SecureVault};
 use arboard::Clipboard;
 use log::{error, info, trace, warn};
 use notify_rust::Notification;
+use regex::RegexSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread::sleep;
@@ -23,7 +24,16 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
     let mut last_content = String::new();
     let mut last_error: Option<String> = None;
     let config = AppConfig::load();
-    info!("Clipboard monitor thread successfully initialized.");
+
+    let regex_set = RegexSet::new(&config.regex_patterns).unwrap_or_else(|e| {
+        error!("Failed to compile regex patterns: {}", e);
+        RegexSet::empty()
+    });
+
+    info!(
+        "Clipboard monitor thread initialized with {} active regex rules.",
+        config.regex_patterns.len()
+    );
 
     loop {
         sleep(Duration::from_millis(500));
@@ -45,30 +55,38 @@ pub fn run_monitor(vault: Arc<Mutex<SecureVault>>) {
                 let entropy = calculate_entropy(&current_content);
                 let len = current_content.len();
                 let has_space = current_content.contains(' ');
+                let matches_regex = regex_set.is_match(&current_content);
 
                 trace!(
-                    "Detected clipboard change. Len: {}, Entropy: {:.2}, Has Space: {}",
+                    "Detected clipboard change. Len: {}, Entropy: {:.2}, RegexMatch: {}, Has Space: {}",
                     len,
                     entropy,
+                    matches_regex,
                     has_space
                 );
 
-                if entropy > config.min_entropy && len >= config.min_length && !has_space {
-                    info!("Sensitive high-entropy payload detected. Securing...");
+                let is_sensitive = matches_regex
+                    || (entropy > config.min_entropy && len >= config.min_length && !has_space);
+
+                if is_sensitive {
+                    info!("Sensitive payload detected (entropy/regex). Securing...");
 
                     match vault.try_lock() {
                         Ok(mut v) => {
-                            let _slot_id = v.multi_vault.push(current_content.clone(), entropy as f32);
-                            
+                            let _slot_id =
+                                v.multi_vault.push(current_content.clone(), entropy as f32);
+
                             if clipboard.set_text("").is_ok() {
                                 last_content.clear();
                                 info!("Clipboard wiped. Data secured in vault.");
 
-                                let _ = Notification::new()
-                                    .summary("PassClip Security")
-                                    .body("High-entropy secret intercepted and secured.")
-                                    .timeout(Duration::from_secs(3))
-                                    .show();
+                                if config.enable_notifications {
+                                    let _ = Notification::new()
+                                        .summary("PassClip Security")
+                                        .body("Sensitive secret intercepted and secured.")
+                                        .timeout(Duration::from_secs(3))
+                                        .show();
+                                }
                             } else {
                                 error!("Failed to wipe clipboard contents");
                             }
