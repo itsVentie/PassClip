@@ -2870,6 +2870,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "objc2-local-authentication"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "430605e43490dc3837b7d50d8daedacb9f7926da3935a8cd09651a6a9d071b71"
+dependencies = [
+ "block2 0.5.1",
+ "objc2 0.5.2",
+ "objc2-foundation 0.2.2",
+]
+
+[[package]]
 name = "objc2-metal"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3005,6 +3016,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "pam-client"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c490dfd80cb5815222bccc3fd4895554fadc7308aa24dfa046534b5f550740f6"
+dependencies = [
+ "libc",
+ "pam-sys",
+ "rpassword",
+ "rustversion",
+]
+
+[[package]]
+name = "pam-sys"
+version = "0.5.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd4858311a097f01a0006ef7d0cd50bca81ec430c949d7bf95cbefd202282434"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "pango"
 version = "0.18.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3070,7 +3102,11 @@ dependencies = [
  "image 0.24.9",
  "log",
  "notify-rust",
+ "objc2 0.5.2",
+ "objc2-foundation 0.2.2",
+ "objc2-local-authentication",
  "open",
+ "pam-client",
  "rand 0.8.7",
  "regex",
  "serde",
@@ -3648,6 +3684,16 @@ checksum = "f8dd2a808d456c4a54e300a23e9f5a67e122c3024119acbfd73e3bf664491cb2"
 dependencies = [
  "hmac 0.12.1",
  "subtle",
+]
+
+[[package]]
+name = "rpassword"
+version = "5.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ffc936cf8a7ea60c58f030fd36a612a48f440610214dc54bc36431f9ea0c3efb"
+dependencies = [
+ "libc",
+ "winapi",
 ]
 
 [[package]]

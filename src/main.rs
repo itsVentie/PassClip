@@ -1,9 +1,10 @@
+mod auth;
 mod config;
 mod crypto;
 mod daemon;
 mod ipc;
-mod vault;
 mod rules;
+mod vault;
 
 use clap::{Parser, Subcommand};
 use crypto::SecureVault;
@@ -121,10 +122,19 @@ async fn main() {
         }
 
         Commands::Pop { id } => {
+            let target_slot = id.unwrap_or(0);
+            let prompt_reason = format!("Authorize retrieval of secret slot '{}'", target_slot);
+
+            if !auth::authenticate_user(&prompt_reason) {
+                error!("Access denied: user authentication failed.");
+                std::process::exit(1);
+            }
+
             info!(
-                "Initiating challenge request for slot {:?}...",
-                id.unwrap_or(0)
+                "User authenticated. Initiating challenge request for slot {}...",
+                target_slot
             );
+
             match send_client_request(IpcRequest::RequestChallenge { slot_id: *id }).await {
                 Ok(ipc::protocol::IpcResponse::Challenge { options }) => {
                     info!("Passkey challenge received. Authenticating...");
