@@ -78,3 +78,16 @@ pub async fn pop_slot(id: u32) -> Result<String, String> {
         _ => Err("Unexpected response".into()),
     }
 }
+
+#[tauri::command]
+pub async fn verify_assertion(assertion_json: String) -> Result<String, String> {
+    let response: passclip::ipc::protocol::IpcResponse = send_client_request(
+        IpcRequest::SubmitAssertion { assertion_json }
+    ).await.map_err(|e| format!("IPC connection error: {}", e))?;
+
+    match response {
+        IpcResponse::Secret { data } => Ok(data),
+        IpcResponse::Error { message } => Err(message),
+        _ => Err("Unexpected response from daemon".into()),
+    }
+}

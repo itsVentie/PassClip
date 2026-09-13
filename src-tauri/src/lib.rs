@@ -1,7 +1,7 @@
 mod autostart;
 mod commands;
 
-use commands::{get_vault_slots, get_vault_status, pop_slot};
+use commands::{get_vault_slots, get_vault_status, pop_slot, verify_assertion};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -15,7 +15,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_vault_slots,
             get_vault_status,
-            pop_slot
+            pop_slot,
+            verify_assertion
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
