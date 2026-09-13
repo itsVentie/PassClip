@@ -81,13 +81,17 @@ pub async fn pop_slot(id: u32) -> Result<String, String> {
 
 #[tauri::command]
 pub async fn verify_assertion(assertion_json: String) -> Result<String, String> {
-    let response: passclip::ipc::protocol::IpcResponse = send_client_request(
-        IpcRequest::SubmitAssertion { assertion_json }
-    ).await.map_err(|e| format!("IPC connection error: {}", e))?;
+    let credential = serde_json::from_str(&assertion_json)
+        .map_err(|e| format!("Failed to parse credential assertion JSON: {}", e))?;
 
-    match response {
-        IpcResponse::Secret { data } => Ok(data),
-        IpcResponse::Error { message } => Err(message),
+    let request = IpcRequest::VerifyAssertion {
+        assertion: Box::new(credential),
+    };
+
+    match send_client_request(request).await {
+        Ok(IpcResponse::Success { secret }) => Ok(secret.as_str().to_string()),
+        Ok(IpcResponse::Error { message }) => Err(message),
+        Err(e) => Err(format!("IPC connection error: {}", e)),
         _ => Err("Unexpected response from daemon".into()),
     }
 }
