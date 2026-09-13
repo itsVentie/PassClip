@@ -1,36 +1,42 @@
 :root {
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-tertiary: #2a2a2a;
-  --border-color: #333333;
-  --text-main: #e0e0e0;
-  --text-muted: #888888;
-  --accent-primary: #ffffff;
-  --accent-bg: #2d2d2d;
-  --accent-hover: #383838;
-  
-  --status-unlocked-bg: #1c2b1e;
-  --status-unlocked-text: #81c784;
-  --status-unlocked-border: #2e4a32;
-  
-  --status-locked-bg: #2c1c1c;
-  --status-locked-text: #e57373;
-  --status-locked-border: #4a2e2e;
-  
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --bg-primary: #111318;
+  --bg-secondary: #181b22;
+  --bg-tertiary: #212631;
+  --border-color: #2b313e;
+
+  --text-main: #e2e8f0;
+  --text-muted: #8b95a5;
+
+  --accent-primary: #a5b4fc;
+  --accent-bg: #272d3d;
+  --accent-hover: #323a4e;
+
+  --status-unlocked-bg: #142820;
+  --status-unlocked-text: #a7f3d0;
+  --status-unlocked-border: #1e4635;
+
+  --status-locked-bg: #2a181d;
+  --status-locked-text: #fecdd3;
+  --status-locked-border: #4c202a;
+
+  --status-warning-bg: #2a2015;
+  --status-warning-text: #fde68a;
+  --status-warning-border: #4a361c;
+
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .appContainer {
   min-height: 100vh;
-  background-color: #121212;
+  background-color: var(--bg-primary);
 }
 
 .vaultPage {
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 40px 24px;
   color: var(--text-main);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -38,16 +44,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .vaultHeader h1 {
   margin: 0;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   color: var(--accent-primary);
 }
 
@@ -55,21 +61,22 @@
   background-color: var(--accent-bg);
   color: var(--text-main);
   border: 1px solid var(--border-color);
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 7px 14px;
+  border-radius: 6px;
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.1s ease, border-color 0.1s ease;
+  transition: all 0.15s ease;
 }
 
 .refreshBtn:hover:not(:disabled) {
   background-color: var(--accent-hover);
-  border-color: #444444;
+  border-color: #3f495e;
+  color: #ffffff;
 }
 
 .refreshBtn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -77,10 +84,10 @@
   display: flex;
   gap: 24px;
   background-color: var(--bg-secondary);
-  padding: 12px 16px;
-  border-radius: 4px;
+  padding: 14px 18px;
+  border-radius: 8px;
   border: 1px solid var(--border-color);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .statusItem {
@@ -101,13 +108,13 @@
 }
 
 .statusBadge {
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.725rem;
   font-family: var(--font-mono);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
 }
 
 .statusBadge.unlocked {
@@ -126,26 +133,143 @@
   background-color: var(--status-locked-bg);
   color: var(--status-locked-text);
   border: 1px solid var(--status-locked-border);
-  padding: 10px 14px;
-  border-radius: 4px;
-  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 24px;
   font-size: 0.8125rem;
   font-family: var(--font-mono);
+}
+
+.tabNav {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 20px;
+}
+
+.tabBtn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: -1px;
+}
+
+.tabBtn:hover {
+  color: var(--text-main);
+}
+
+.tabBtn.tabActive {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
 }
 
 .slotsList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .emptyState {
   text-align: center;
-  padding: 36px 16px;
+  padding: 40px 16px;
   background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
   color: var(--text-muted);
   font-size: 0.8125rem;
   font-family: var(--font-mono);
+}
+
+.placeholderPanel {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.panelBadge {
+  background-color: var(--status-warning-bg);
+  color: var(--status-warning-text);
+  border: 1px solid var(--status-warning-border);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.unimplementedBanner {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--status-warning-text);
+  background-color: var(--status-warning-bg);
+  border: 1px solid var(--status-warning-border);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.placeholderList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.placeholderRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  padding: 8px 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.timestamp {
+  color: var(--text-muted);
+}
+
+.maskedText {
+  color: var(--text-main);
+  flex: 1;
+  letter-spacing: 0.1em;
+}
+
+.meta {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.logBox {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-muted);
 }
