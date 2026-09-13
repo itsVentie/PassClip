@@ -9,6 +9,7 @@ use std::io;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use webauthn_rs::prelude::*;
+#[allow(unused_imports)]
 use passclip::{auth, config, crypto, daemon, ipc, rules, vault};
 
 #[derive(Parser)]
