@@ -1,11 +1,3 @@
-mod auth;
-mod config;
-mod crypto;
-mod daemon;
-mod ipc;
-mod rules;
-mod vault;
-
 use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Shell};
 use crypto::SecureVault;
@@ -17,6 +9,7 @@ use std::io;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use webauthn_rs::prelude::*;
+use passclip::{auth, config, crypto, daemon, ipc, rules, vault};
 
 #[derive(Parser)]
 #[command(name = "passclip")]

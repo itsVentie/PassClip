@@ -3,6 +3,17 @@ name = "passclip"
 version = "0.1.0"
 edition = "2021"
 
+[workspace]
+members = [".", "src-tauri"]
+
+[lib]
+name = "passclip"
+path = "src/lib.rs"
+
+[[bin]]
+name = "passclip"
+path = "src/main.rs"
+
 [dependencies]
 regex = "1.10"
 tray-icon = "0.19"
@@ -28,9 +39,7 @@ open = "5.4.1"
 
 [dependencies.windows]
 version = "0.58"
-features = [
-    "Security_Credentials_UI",
-]
+features = ["Security_Credentials_UI"]
 
 [target.'cfg(target_os = "linux")'.dependencies]
 pam-client = "0.1"
