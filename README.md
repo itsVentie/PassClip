@@ -222,7 +222,7 @@ enable_notifications = true
 <summary><b>Phase 6: Native Desktop Interface & Advanced Control (v0.2.0)</b></summary>
 
 * [x] Build native desktop GUI using Tauri v2 and Preact.
-* [ ] Implement interactive multi-slot vault viewer and manual revocation controls.
+* [x] Implement interactive multi-slot vault viewer and manual revocation controls.
 * [ ] Add visual configuration settings panel (entropy thresholds, timers).
 * [ ] Seamless system tray menu integration with direct UI window toggling.
 </details>
