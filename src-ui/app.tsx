@@ -1,40 +1,64 @@
-import { useVault } from './hooks/useVault';
+import { useEffect, useState } from "preact/hooks";
+import { getVaultSlots, getVaultStatus, popSlot, UiSlot, UiStatus } from "./api";
 
 export function App() {
-  const { slots, error, loading, refresh } = useVault();
+  const [slots, setSlots] = useState<UiSlot[]>([]);
+  const [status, setStatus] = useState<UiStatus | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const refreshData = async () => {
+    try {
+      setError(null);
+      const [fetchedSlots, fetchedStatus] = await Promise.all([
+        getVaultSlots(),
+        getVaultStatus(),
+      ]);
+      setSlots(fetchedSlots);
+      setStatus(fetchedStatus);
+    } catch (err) {
+      setError(String(err));
+    }
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, []);
+
+  const handlePopSlot = async (id: number) => {
+    try {
+      const challengePayload = await popSlot(id);
+      console.log("Challenge received:", challengePayload);
+    } catch (err) {
+      setError(`Failed to pop slot: ${err}`);
+    }
+  };
 
   return (
-    <div style={{ padding: '24px', background: '#0f0f11', color: '#e2e8f0', minHeight: '100vh', fontFamily: 'system-ui' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>PassClip Vault</h1>
-        <button onClick={refresh} disabled={loading} style={{ background: '#27272a', border: '1px solid #3f3f46', color: '#fff', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
-          {loading ? 'Refreshing...' : 'Refresh'}
-        </button>
+    <div className="container">
+      <header>
+        <h1>PassClip Vault</h1>
+        <button onClick={refreshData}>Refresh</button>
       </header>
 
-      {error ? (
-        <div style={{ background: '#3f1212', border: '1px solid #7f1d1d', color: '#fca5a5', padding: '12px', borderRadius: '8px' }}>
-          {error}
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {slots.length === 0 ? (
-            <p style={{ color: '#71717a' }}>No secrets currently held in volatile RAM.</p>
-          ) : (
-            slots.map((slot) => (
-              <div key={slot.id} style={{ background: '#18181b', border: '1px solid #27272a', padding: '12px 16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  <span style={{ fontWeight: 'bold' }}>Slot #{slot.id}</span>
-                  <span style={{ marginLeft: '10px', color: '#a1a1aa', fontSize: '0.9rem' }}>Length: {slot.len} chars</span>
-                </div>
-                <div style={{ color: '#10b981', fontSize: '0.9rem', fontFamily: 'monospace' }}>
-                  Entropy: {slot.entropy.toFixed(2)}
-                </div>
-              </div>
-            ))
-          )}
+      {status && (
+        <div className="status-bar">
+          <p>Slots used: {status.count} / {status.max_slots}</p>
+          <p>Vault status: {status.has_secret ? "Unlocked" : "Locked"}</p>
         </div>
       )}
+
+      {error && <div className="error-banner">{error}</div>}
+
+      <div className="slots-list">
+        {slots.map((slot) => (
+          <div key={slot.id} className="slot-card">
+            <span>Slot #{slot.id}</span>
+            <span>Length: {slot.len}</span>
+            <span>Entropy: {slot.entropy.toFixed(2)}</span>
+            <button onClick={() => handlePopSlot(slot.id)}>Pop</button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
