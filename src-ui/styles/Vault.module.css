@@ -7,23 +7,23 @@
   --text-main: #e2e8f0;
   --text-muted: #8b95a5;
 
-  --accent-primary: #a5b4fc;
-  --accent-bg: #272d3d;
-  --accent-hover: #323a4e;
+  --accent-primary: #cbd5e1;
+  --accent-bg: #212631;
+  --accent-hover: #2b313e;
 
-  --status-unlocked-bg: #142820;
-  --status-unlocked-text: #a7f3d0;
-  --status-unlocked-border: #1e4635;
+  --status-unlocked-bg: #161f1b;
+  --status-unlocked-text: #6ee7b7;
+  --status-unlocked-border: #1e3329;
+  
+  --status-locked-bg: #22181a;
+  --status-locked-text: #fda4af;
+  --status-locked-border: #3b2226;
 
-  --status-locked-bg: #2a181d;
-  --status-locked-text: #fecdd3;
-  --status-locked-border: #4c202a;
+  --status-stub-bg: #181b22;
+  --status-stub-text: #94a3b8;
+  --status-stub-border: #334155;
 
-  --status-warning-bg: #2a2015;
-  --status-warning-text: #fde68a;
-  --status-warning-border: #4a361c;
-
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono: "Fira Code", "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .appContainer {
@@ -51,28 +51,26 @@
 
 .vaultHeader h1 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--accent-primary);
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--text-main);
 }
 
 .refreshBtn {
   background-color: var(--accent-bg);
   color: var(--text-main);
   border: 1px solid var(--border-color);
-  padding: 7px 14px;
+  padding: 6px 12px;
   border-radius: 6px;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .refreshBtn:hover:not(:disabled) {
   background-color: var(--accent-hover);
-  border-color: #3f495e;
-  color: #ffffff;
+  border-color: #475569;
 }
 
 .refreshBtn:disabled {
@@ -85,7 +83,7 @@
   gap: 24px;
   background-color: var(--bg-secondary);
   padding: 14px 18px;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid var(--border-color);
   margin-bottom: 24px;
 }
@@ -103,18 +101,17 @@
 
 .statusValue {
   font-family: var(--font-mono);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-main);
 }
 
 .statusBadge {
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.725rem;
+  font-size: 0.75rem;
   font-family: var(--font-mono);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 400;
+  /* Убран uppercase */
 }
 
 .statusBadge.unlocked {
@@ -142,7 +139,7 @@
 
 .tabNav {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 20px;
 }
@@ -152,12 +149,12 @@
   border: none;
   border-bottom: 2px solid transparent;
   color: var(--text-muted);
-  padding: 10px 14px;
+  padding: 8px 12px;
   font-size: 0.8125rem;
   font-family: inherit;
-  font-weight: 500;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
   margin-bottom: -1px;
 }
 
@@ -166,22 +163,22 @@
 }
 
 .tabBtn.tabActive {
-  color: var(--accent-primary);
-  border-bottom-color: var(--accent-primary);
+  color: var(--text-main);
+  border-bottom-color: var(--text-main);
 }
 
 .slotsList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .emptyState {
   text-align: center;
-  padding: 40px 16px;
+  padding: 36px 16px;
   background-color: var(--bg-secondary);
   border: 1px dashed var(--border-color);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--text-muted);
   font-size: 0.8125rem;
   font-family: var(--font-mono);
@@ -190,42 +187,41 @@
 .placeholderPanel {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: 6px;
+  padding: 18px;
 }
 
 .panelHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-family: var(--font-mono);
   color: var(--text-muted);
   margin-bottom: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  /* Убран uppercase, теперь обычный регистр */
 }
 
 .panelBadge {
-  background-color: var(--status-warning-bg);
-  color: var(--status-warning-text);
-  border: 1px solid var(--status-warning-border);
-  padding: 2px 8px;
+  background-color: var(--status-stub-bg);
+  color: var(--status-stub-text);
+  border: 1px solid var(--status-stub-border);
+  padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 400;
 }
 
 .unimplementedBanner {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   line-height: 1.5;
-  color: var(--status-warning-text);
-  background-color: var(--status-warning-bg);
-  border: 1px solid var(--status-warning-border);
+  color: var(--status-stub-text);
+  background-color: var(--status-stub-bg);
+  border: 1px solid var(--status-stub-border);
   padding: 10px 14px;
   border-radius: 6px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .placeholderList {
@@ -253,7 +249,6 @@
 .maskedText {
   color: var(--text-main);
   flex: 1;
-  letter-spacing: 0.1em;
 }
 
 .meta {
@@ -267,7 +262,7 @@
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  padding: 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;

@@ -12,7 +12,7 @@ export function VaultPage() {
   return (
     <div className={styles.vaultPage}>
       <header className={styles.vaultHeader}>
-        <h1>PassClip Vault</h1>
+        <h1>PassClip</h1>
         <button className={styles.refreshBtn} onClick={refresh} disabled={loading}>
           {loading ? "Refreshing..." : "Refresh"}
         </button>
