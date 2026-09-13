@@ -1,6 +1,7 @@
 import { UiSlot } from '../api/api';
 
-interface SlotCardProps {
+export interface SlotCardProps {
+  key?: number | string;
   slot: UiSlot;
   onPop: (id: number) => void;
 }
