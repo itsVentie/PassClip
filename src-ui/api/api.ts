@@ -24,3 +24,7 @@ export const getVaultStatus = async (): Promise<UiStatus> => {
 export const popSlot = async (id: number): Promise<string> => {
   return await invoke<string>("pop_slot", { id });
 };
+
+export const verifyAssertion = async (assertionJson: string): Promise<string> => {
+  return await invoke<string>("verify_assertion", { assertionJson });
+};
