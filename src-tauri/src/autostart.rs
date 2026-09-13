@@ -1,5 +1,7 @@
 use log::{info, warn};
 use std::process::Command;
+use std::thread;
+use std::time::Duration;
 use passclip::ipc::protocol::IpcRequest;
 use passclip::ipc::server::send_client_request;
 
@@ -14,7 +16,7 @@ pub async fn ensure_daemon_running() {
     #[cfg(debug_assertions)]
     let mut cmd = Command::new("cargo");
     #[cfg(debug_assertions)]
-    cmd.args(["run", "--bin", "passclip", "--", "daemon"]);
+    cmd.args(["run", "--package", "passclip", "--bin", "passclip", "--", "daemon"]);
 
     #[cfg(not(debug_assertions))]
     let mut cmd = Command::new("passclip");
@@ -22,7 +24,10 @@ pub async fn ensure_daemon_running() {
     cmd.arg("daemon");
 
     match cmd.spawn() {
-        Ok(_) => info!("Daemon process spawned successfully."),
+        Ok(child) => {
+            info!("Daemon process spawned successfully (PID: {}).", child.id());
+            thread::sleep(Duration::from_millis(500));
+        }
         Err(e) => warn!("Failed to spawn daemon process: {}", e),
     }
 }
