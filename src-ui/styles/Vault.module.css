@@ -1,0 +1,128 @@
+.app-container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #e0e0e0;
+}
+
+.vault-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.vault-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.refresh-btn {
+  background-color: #2b2d3a;
+  border: 1px solid #3d4052;
+  color: #e0e0e0;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background-color: #3b3e50;
+}
+
+.status-bar {
+  display: flex;
+  gap: 20px;
+  background: #1a1b23;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #282a36;
+  margin-bottom: 16px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-badge.unlocked {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+}
+
+.status-badge.locked {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+.error-banner {
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid #e74c3c;
+  color: #ff6b6b;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.slot-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #181920;
+  border: 1px solid #252733;
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.slot-info {
+  display: flex;
+  gap: 16px;
+}
+
+.slot-id {
+  font-weight: 600;
+  color: #7986cb;
+}
+
+.slot-detail {
+  color: #9e9e9e;
+  font-size: 0.9rem;
+}
+
+.pop-btn {
+  background: #2b2d3a;
+  border: 1px solid #3d4052;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.pop-btn:hover {
+  background: #3b3e50;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 0;
+  color: #6c757d;
+  font-style: italic;
+}
