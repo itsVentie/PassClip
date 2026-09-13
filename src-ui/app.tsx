@@ -1,104 +1,40 @@
-import { useState } from 'preact/hooks'
-import heroImg from './assets/hero.png'
-import preactLogo from './assets/preact.svg'
-import viteLogo from './assets/vite.svg'
-import './app.css'
+import { useVault } from './hooks/useVault';
 
 export function App() {
-  const [count, setCount] = useState(0)
+  const { slots, error, loading, refresh } = useVault();
 
   return (
-    <>
-      <section id="center">
-        <div class="hero">
-          <img src={heroImg} class="base" width="170" height="179" alt="" />
-          <img src={preactLogo} class="framework" alt="Preact logo" />
-          <img src={viteLogo} class="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/app.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          class="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+    <div style={{ padding: '24px', background: '#0f0f11', color: '#e2e8f0', minHeight: '100vh', fontFamily: 'system-ui' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1 style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>PassClip Vault</h1>
+        <button onClick={refresh} disabled={loading} style={{ background: '#27272a', border: '1px solid #3f3f46', color: '#fff', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+          {loading ? 'Refreshing...' : 'Refresh'}
         </button>
-      </section>
+      </header>
 
-      <div class="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg class="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img class="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://preactjs.com/" target="_blank">
-                <img class="button-icon" src={preactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {error ? (
+        <div style={{ background: '#3f1212', border: '1px solid #7f1d1d', color: '#fca5a5', padding: '12px', borderRadius: '8px' }}>
+          {error}
         </div>
-        <div id="social">
-          <svg class="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {slots.length === 0 ? (
+            <p style={{ color: '#71717a' }}>No secrets currently held in volatile RAM.</p>
+          ) : (
+            slots.map((slot) => (
+              <div key={slot.id} style={{ background: '#18181b', border: '1px solid #27272a', padding: '12px 16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ fontWeight: 'bold' }}>Slot #{slot.id}</span>
+                  <span style={{ marginLeft: '10px', color: '#a1a1aa', fontSize: '0.9rem' }}>Length: {slot.len} chars</span>
+                </div>
+                <div style={{ color: '#10b981', fontSize: '0.9rem', fontFamily: 'monospace' }}>
+                  Entropy: {slot.entropy.toFixed(2)}
+                </div>
+              </div>
+            ))
+          )}
         </div>
-      </section>
-
-      <div class="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      )}
+    </div>
+  );
 }
