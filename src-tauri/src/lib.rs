@@ -1,3 +1,5 @@
+mod autostart;
+
 use passclip::ipc::protocol::{IpcRequest, IpcResponse};
 use passclip::ipc::server::send_client_request;
 use serde::{Deserialize, Serialize};
@@ -43,6 +45,12 @@ async fn get_vault_slots() -> Result<Vec<UiSlot>, String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|_app| {
+            tauri::async_runtime::spawn(async {
+                autostart::ensure_daemon_running().await;
+            });
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![get_vault_slots])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
