@@ -1,6 +1,8 @@
 mod autostart;
 mod commands;
+mod tray;
 
+use tauri::WindowEvent;
 use commands::{get_vault_slots, get_vault_status, pop_slot, verify_assertion};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
