@@ -2,9 +2,10 @@ import { useState } from "preact/hooks";
 import { useVault } from "../hooks/useVault";
 import { SlotCard } from "../components/SlotCard";
 import { LogViewer } from "../components/LogViewer";
+import { SettingsPage } from "./Settings";
 import styles from "../styles/Vault.module.css";
 
-type Tab = "slots" | "history" | "logs";
+type Tab = "slots" | "history" | "logs" | "settings";
 
 export function VaultPage() {
   const { slots, status, error, loading, refresh, handlePopSlot } = useVault();
@@ -37,23 +38,47 @@ export function VaultPage() {
       {error && <div className={styles.errorBanner}>{error}</div>}
 
       <nav className={styles.tabNav}>
+        <div className={styles.tabGroup}>
+          <button
+            className={`${styles.tabBtn} ${activeTab === "slots" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("slots")}
+          >
+            Encrypted Slots ({slots.length})
+          </button>
+          <button
+            className={`${styles.tabBtn} ${activeTab === "history" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("history")}
+          >
+            Clipboard History
+          </button>
+          <button
+            className={`${styles.tabBtn} ${activeTab === "logs" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("logs")}
+          >
+            Entropy & Logs
+          </button>
+        </div>
+
         <button
-          className={`${styles.tabBtn} ${activeTab === "slots" ? styles.tabActive : ""}`}
-          onClick={() => setActiveTab("slots")}
+          className={`${styles.settingsTabBtn} ${activeTab === "settings" ? styles.tabActive : ""}`}
+          onClick={() => setActiveTab("settings")}
+          title="Settings"
+          aria-label="Settings"
         >
-          Encrypted Slots ({slots.length})
-        </button>
-        <button
-          className={`${styles.tabBtn} ${activeTab === "history" ? styles.tabActive : ""}`}
-          onClick={() => setActiveTab("history")}
-        >
-          Clipboard History
-        </button>
-        <button
-          className={`${styles.tabBtn} ${activeTab === "logs" ? styles.tabActive : ""}`}
-          onClick={() => setActiveTab("logs")}
-        >
-          Entropy & Logs
+          <svg
+            className={styles.gearIcon}
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
         </button>
       </nav>
 
@@ -90,6 +115,7 @@ export function VaultPage() {
         )}
 
         {activeTab === "logs" && <LogViewer />}
+        {activeTab === "settings" && <SettingsPage />}
       </div>
     </div>
   );

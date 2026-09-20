@@ -92,6 +92,62 @@
   cursor: not-allowed;
 }
 
+.tabNav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 1rem;
+}
+
+.tabGroup {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.settingsTabBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #8b949e;
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+}
+
+.settingsTabBtn:hover {
+  color: #58a6ff;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.settingsTabBtn.tabActive {
+  color: #58a6ff;
+  background: rgba(88, 166, 255, 0.1);
+  border-color: rgba(88, 166, 255, 0.3);
+}
+
+.gearIcon {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
+}
+
+.settingsTabBtn:hover .gearIcon {
+  transform: rotate(90deg);
+}
+
+.settingsTabBtn:active .gearIcon {
+  transform: rotate(180deg) scale(0.9);
+}
+
+.settingsTabBtn.tabActive .gearIcon {
+  transform: rotate(45deg);
+}
+
 .statusBar {
   display: flex;
   align-items: center;
