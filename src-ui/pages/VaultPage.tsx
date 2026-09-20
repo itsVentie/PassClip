@@ -1,6 +1,7 @@
 import { useState } from "preact/hooks";
 import { useVault } from "../hooks/useVault";
 import { SlotCard } from "../components/SlotCard";
+import { LogViewer } from "../components/LogViewer";
 import styles from "../styles/Vault.module.css";
 
 type Tab = "slots" | "history" | "logs";
@@ -88,20 +89,7 @@ export function VaultPage() {
           </div>
         )}
 
-        {activeTab === "logs" && (
-          <div className={styles.placeholderPanel}>
-            <div className={styles.panelHeader}>
-              <span>Daemon Telemetry & Process Logs</span>
-              <span className={styles.panelBadge}>NOT IMPLEMENTED</span>
-            </div>
-            <div className={styles.unimplementedBanner}>
-              [STUB] Real-time log streaming service is not attached. IPC logging channel is under construction.
-            </div>
-            <div className={styles.logBox}>
-              <div>[SYSTEM] Log stream inactive. Waiting for daemon IPC subscriber implementation...</div>
-            </div>
-          </div>
-        )}
+        {activeTab === "logs" && <LogViewer />}
       </div>
     </div>
   );
