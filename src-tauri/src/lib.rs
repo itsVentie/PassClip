@@ -1,7 +1,9 @@
 mod autostart;
 mod commands;
 mod tray;
+mod logs;
 
+use logs::{clear_logs, get_logs, log, LogState};
 use tauri::WindowEvent;
 use commands::{get_vault_slots, get_vault_status, pop_slot, verify_assertion};
 
