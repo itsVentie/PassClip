@@ -49,29 +49,31 @@ pub async fn run_server(vault: Arc<Mutex<SecureVault>>) {
     {
         let mut is_first = true;
         loop {
-            let server_result = ServerOptions::new()
+            let server_builder = ServerOptions::new()
                 .first_pipe_instance(is_first)
                 .create(PIPE_NAME);
 
-            let mut server = match server_result {
-                Ok(s) => s,
-                Err(_) => {
-                    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+            let mut server = match server_builder {
+                Ok(s) => {
                     is_first = false;
+                    s
+                }
+                Err(_) => {
+                    tokio::time::sleep(Duration::from_millis(50)).await;
                     continue;
                 }
             };
 
             if server.connect().await.is_ok() {
-                is_first = false;
                 let vault_clone = Arc::clone(&vault);
                 tokio::spawn(async move {
                     let mut buf = vec![0u8; 8192];
                     if let Ok(n) = server.read(&mut buf).await {
                         if n > 0 {
                             let response = handle_request(&buf[..n], vault_clone).await;
-                            let res_bytes = serde_json::to_vec(&response).unwrap();
-                            let _ = server.write_all(&res_bytes).await;
+                            if let Ok(res_bytes) = serde_json::to_vec(&response) {
+                                let _ = server.write_all(&res_bytes).await;
+                            }
                         }
                     }
                 });
@@ -91,8 +93,9 @@ pub async fn run_server(vault: Arc<Mutex<SecureVault>>) {
                     if let Ok(n) = stream.read(&mut buf).await {
                         if n > 0 {
                             let response = handle_request(&buf[..n], vault_clone).await;
-                            let res_bytes = serde_json::to_vec(&response).unwrap();
-                            let _ = stream.write_all(&res_bytes).await;
+                            if let Ok(res_bytes) = serde_json::to_vec(&response) {
+                                let _ = stream.write_all(&res_bytes).await;
+                            }
                         }
                     }
                 });
@@ -242,9 +245,27 @@ pub async fn send_client_request(request: IpcRequest) -> Result<IpcResponse, Str
     #[cfg(windows)]
     {
         use tokio::net::windows::named_pipe::ClientOptions;
-        let mut client = ClientOptions::new()
-            .open(PIPE_NAME)
-            .map_err(|e| format!("Failed to connect to daemon: {}", e))?;
+
+        let mut client = None;
+        for _ in 0..10 {
+            match ClientOptions::new().open(PIPE_NAME) {
+                Ok(c) => {
+                    client = Some(c);
+                    break;
+                }
+                Err(e) => {
+                    let code = e.raw_os_error().unwrap_or(0);
+                    if code == 231 || code == 2 {
+                        tokio::time::sleep(Duration::from_millis(50)).await;
+                        continue;
+                    } else {
+                        return Err(format!("Failed to connect to daemon: {}", e));
+                    }
+                }
+            }
+        }
+
+        let mut client = client.ok_or_else(|| "Daemon pipe busy/unavailable (timeout)".to_string())?;
 
         client
             .write_all(&req_bytes)
