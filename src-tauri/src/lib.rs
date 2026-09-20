@@ -1,19 +1,23 @@
 mod autostart;
 mod commands;
-mod tray;
 mod logs;
+mod tray;
 
+use commands::{get_vault_slots, get_vault_status, pop_slot, verify_assertion};
 use logs::{clear_logs, get_logs, log, LogState};
 use tauri::WindowEvent;
-use commands::{get_vault_slots, get_vault_status, pop_slot, verify_assertion};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(LogState::new())
         .setup(|app| {
             tray::setup_tray(app.handle())?;
 
-            tauri::async_runtime::spawn(async {
+            let handle = app.handle().clone();
+            log(&handle, "INFO", "PassClip GUI initialized");
+
+            tauri::async_runtime::spawn(async move {
                 autostart::ensure_daemon_running().await;
             });
 
@@ -29,7 +33,9 @@ pub fn run() {
             get_vault_slots,
             get_vault_status,
             pop_slot,
-            verify_assertion
+            verify_assertion,
+            get_logs,
+            clear_logs
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
