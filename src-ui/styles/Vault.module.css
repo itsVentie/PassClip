@@ -1,76 +1,90 @@
 :root {
-  --bg-primary: #111318;
-  --bg-secondary: #181b22;
-  --bg-tertiary: #212631;
-  --border-color: #2b313e;
+  --bg-primary: #121418;
+  --bg-secondary: #181b20;
+  --bg-tertiary: #20242c;
+  --bg-elevated: #282c35;
 
-  --text-main: #e2e8f0;
-  --text-muted: #8b95a5;
+  --border-color: #262b35;
+  --border-subtle: #1e222a;
+  --border-focus: #3b4252;
 
-  --accent-primary: #cbd5e1;
-  --accent-bg: #212631;
-  --accent-hover: #2b313e;
+  --text-main: #ededed;
+  --text-muted: #8c94a0;
+  --text-dim: #5c6370;
 
-  --status-unlocked-bg: #161f1b;
-  --status-unlocked-text: #6ee7b7;
-  --status-unlocked-border: #1e3329;
-  
-  --status-locked-bg: #22181a;
-  --status-locked-text: #fda4af;
-  --status-locked-border: #3b2226;
+  --accent-hover: #262a34;
+  --accent-active: #303542;
 
-  --status-stub-bg: #181b22;
-  --status-stub-text: #94a3b8;
-  --status-stub-border: #334155;
+  --status-neutral-bg: #222630;
+  --status-neutral-text: #d0d4dc;
+  --status-neutral-border: #2e3442;
 
-  --font-mono: "Fira Code", "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --status-active-bg: #2d3342;
+  --status-active-text: #ffffff;
+  --status-active-border: #3f475a;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+
+  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 .appContainer {
   min-height: 100vh;
   background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 .vaultPage {
   max-width: 760px;
   margin: 0 auto;
-  padding: 40px 24px;
-  color: var(--text-main);
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
+  padding: 32px 20px;
 }
 
 .vaultHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 28px;
-  padding-bottom: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .vaultHeader h1 {
   margin: 0;
-  font-size: 1.125rem;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font-sans);
   color: var(--text-main);
+  letter-spacing: -0.01em;
 }
 
 .refreshBtn {
-  background-color: var(--accent-bg);
+  background-color: var(--bg-tertiary);
   color: var(--text-main);
   border: 1px solid var(--border-color);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.8125rem;
-  font-weight: 400;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-family: var(--font-sans);
+  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .refreshBtn:hover:not(:disabled) {
   background-color: var(--accent-hover);
-  border-color: #475569;
+  border-color: var(--border-focus);
 }
 
 .refreshBtn:disabled {
@@ -80,19 +94,20 @@
 
 .statusBar {
   display: flex;
+  align-items: center;
   gap: 24px;
   background-color: var(--bg-secondary);
-  padding: 14px 18px;
-  border-radius: 6px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .statusItem {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.8125rem;
+  font-size: 12px;
 }
 
 .statusLabel {
@@ -100,150 +115,147 @@
 }
 
 .statusValue {
-  font-family: var(--font-mono);
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text-main);
 }
 
+/* Neutral Pills / Badges */
 .statusBadge {
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-family: var(--font-mono);
-  font-weight: 400;
-  /* Убран uppercase */
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  line-height: 1.3;
+  user-select: none;
+  background-color: var(--status-neutral-bg);
+  color: var(--status-neutral-text);
+  border: 1px solid var(--status-neutral-border);
 }
 
-.statusBadge.unlocked {
-  background-color: var(--status-unlocked-bg);
-  color: var(--status-unlocked-text);
-  border: 1px solid var(--status-unlocked-border);
-}
-
+.statusBadge.unlocked,
 .statusBadge.locked {
-  background-color: var(--status-locked-bg);
-  color: var(--status-locked-text);
-  border: 1px solid var(--status-locked-border);
+  background-color: var(--status-active-bg);
+  color: var(--status-active-text);
+  border-color: var(--status-active-border);
 }
 
 .errorBanner {
-  background-color: var(--status-locked-bg);
-  color: var(--status-locked-text);
-  border: 1px solid var(--status-locked-border);
-  padding: 12px 16px;
-  border-radius: 6px;
-  margin-bottom: 24px;
-  font-size: 0.8125rem;
-  font-family: var(--font-mono);
+  background-color: var(--bg-secondary);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  font-size: 12px;
 }
 
 .tabNav {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 20px;
+  padding-bottom: 8px;
 }
 
 .tabBtn {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   color: var(--text-muted);
-  padding: 8px 12px;
-  font-size: 0.8125rem;
-  font-family: inherit;
-  font-weight: 400;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: var(--font-sans);
+  font-weight: 500;
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
-  margin-bottom: -1px;
+  transition: all 0.15s ease;
 }
 
 .tabBtn:hover {
   color: var(--text-main);
+  background-color: var(--accent-hover);
 }
 
 .tabBtn.tabActive {
   color: var(--text-main);
-  border-bottom-color: var(--text-main);
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
 }
 
 .slotsList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .emptyState {
   text-align: center;
-  padding: 36px 16px;
+  padding: 32px 16px;
   background-color: var(--bg-secondary);
   border: 1px dashed var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   color: var(--text-muted);
-  font-size: 0.8125rem;
-  font-family: var(--font-mono);
+  font-size: 12px;
 }
 
 .placeholderPanel {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 18px;
+  border-radius: var(--radius-lg);
+  padding: 16px;
 }
 
 .panelHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8125rem;
-  font-family: var(--font-mono);
+  font-size: 12px;
   color: var(--text-muted);
-  margin-bottom: 14px;
-  /* Убран uppercase, теперь обычный регистр */
+  margin-bottom: 12px;
 }
 
 .panelBadge {
-  background-color: var(--status-stub-bg);
-  color: var(--status-stub-text);
-  border: 1px solid var(--status-stub-border);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 400;
+  background-color: var(--status-neutral-bg);
+  color: var(--status-neutral-text);
+  border: 1px solid var(--status-neutral-border);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
 }
 
 .unimplementedBanner {
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: var(--status-stub-text);
-  background-color: var(--status-stub-bg);
-  border: 1px solid var(--status-stub-border);
-  padding: 10px 14px;
-  border-radius: 6px;
-  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
 }
 
 .placeholderList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .placeholderRow {
   display: flex;
   gap: 12px;
   align-items: center;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: 12px;
   padding: 8px 12px;
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
 }
 
 .timestamp {
-  color: var(--text-muted);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
 }
 
 .maskedText {
@@ -253,15 +265,16 @@
 
 .meta {
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-size: 11px;
+  font-family: var(--font-mono);
 }
 
 .logBox {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 12px;
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 12px;
   display: flex;
   flex-direction: column;
