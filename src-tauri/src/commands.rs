@@ -1,7 +1,9 @@
+use crate::logs;
 use passclip::ipc::protocol::{IpcRequest, IpcResponse};
 use passclip::ipc::server::send_client_request;
 use serde::{Deserialize, Serialize};
 use std::time::UNIX_EPOCH;
+use tauri::AppHandle;
 
 #[derive(Serialize, Deserialize)]
 pub struct UiSlot {
@@ -19,7 +21,8 @@ pub struct UiStatus {
 }
 
 #[tauri::command]
-pub async fn get_vault_slots() -> Result<Vec<UiSlot>, String> {
+pub async fn get_vault_slots(app: AppHandle) -> Result<Vec<UiSlot>, String> {
+    logs::log(&app, "DEBUG", "Fetching vault slots from daemon...");
     match send_client_request(IpcRequest::List).await {
         Ok(IpcResponse::List { slots }) => {
             let ui_slots = slots
@@ -41,14 +44,25 @@ pub async fn get_vault_slots() -> Result<Vec<UiSlot>, String> {
                 .collect();
             Ok(ui_slots)
         }
-        Ok(IpcResponse::Error { message }) => Err(message),
-        Err(e) => Err(format!("Daemon connection failed: {}", e)),
-        _ => Err("Unexpected response from daemon".into()),
+        Ok(IpcResponse::Error { message }) => {
+            logs::log(&app, "ERROR", &format!("Failed to fetch slots: {}", message));
+            Err(message)
+        }
+        Err(e) => {
+            let err_msg = format!("Daemon connection failed: {}", e);
+            logs::log(&app, "ERROR", &err_msg);
+            Err(err_msg)
+        }
+        _ => {
+            logs::log(&app, "ERROR", "Unexpected response from daemon on get_vault_slots");
+            Err("Unexpected response from daemon".into())
+        }
     }
 }
 
 #[tauri::command]
-pub async fn get_vault_status() -> Result<UiStatus, String> {
+pub async fn get_vault_status(app: AppHandle) -> Result<UiStatus, String> {
+    logs::log(&app, "DEBUG", "Fetching vault status...");
     match send_client_request(IpcRequest::GetStatus).await {
         Ok(IpcResponse::Status {
             has_secret,
@@ -59,39 +73,78 @@ pub async fn get_vault_status() -> Result<UiStatus, String> {
             count,
             max_slots,
         }),
-        Ok(IpcResponse::Error { message }) => Err(message),
-        Err(e) => Err(format!("Failed to connect to daemon: {}", e)),
-        _ => Err("Unexpected response from daemon".into()),
+        Ok(IpcResponse::Error { message }) => {
+            logs::log(&app, "ERROR", &format!("Daemon status error: {}", message));
+            Err(message)
+        }
+        Err(e) => {
+            let err_msg = format!("Failed to connect to daemon: {}", e);
+            logs::log(&app, "ERROR", &err_msg);
+            Err(err_msg)
+        }
+        _ => {
+            logs::log(&app, "ERROR", "Unexpected response from daemon on get_vault_status");
+            Err("Unexpected response from daemon".into())
+        }
     }
 }
 
 #[tauri::command]
-pub async fn pop_slot(id: u32) -> Result<String, String> {
+pub async fn pop_slot(app: AppHandle, id: u32) -> Result<String, String> {
+    logs::log(&app, "INFO", &format!("Requesting challenge for slot ID: {}", id));
     match send_client_request(IpcRequest::RequestChallenge { slot_id: Some(id) }).await {
         Ok(IpcResponse::Challenge { options }) => {
             let payload = serde_json::to_string(&options)
                 .map_err(|e| format!("Failed to serialize challenge: {}", e))?;
+            logs::log(&app, "INFO", &format!("Challenge generated for slot ID: {}", id));
             Ok(payload)
         }
-        Ok(IpcResponse::Error { message }) => Err(message),
-        Err(e) => Err(format!("IPC error: {}", e)),
-        _ => Err("Unexpected response".into()),
+        Ok(IpcResponse::Error { message }) => {
+            logs::log(&app, "ERROR", &format!("Pop slot error: {}", message));
+            Err(message)
+        }
+        Err(e) => {
+            let err_msg = format!("IPC error: {}", e);
+            logs::log(&app, "ERROR", &err_msg);
+            Err(err_msg)
+        }
+        _ => {
+            logs::log(&app, "ERROR", "Unexpected response from daemon on pop_slot");
+            Err("Unexpected response".into())
+        }
     }
 }
 
 #[tauri::command]
-pub async fn verify_assertion(assertion_json: String) -> Result<String, String> {
-    let credential = serde_json::from_str(&assertion_json)
-        .map_err(|e| format!("Failed to parse credential assertion JSON: {}", e))?;
+pub async fn verify_assertion(app: AppHandle, assertion_json: String) -> Result<String, String> {
+    logs::log(&app, "INFO", "Verifying credential assertion...");
+    let credential = serde_json::from_str(&assertion_json).map_err(|e| {
+        let err_msg = format!("Failed to parse credential assertion JSON: {}", e);
+        logs::log(&app, "ERROR", &err_msg);
+        err_msg
+    })?;
 
     let request = IpcRequest::VerifyAssertion {
         assertion: Box::new(credential),
     };
 
     match send_client_request(request).await {
-        Ok(IpcResponse::Success { secret }) => Ok(secret.as_str().to_string()),
-        Ok(IpcResponse::Error { message }) => Err(message),
-        Err(e) => Err(format!("IPC connection error: {}", e)),
-        _ => Err("Unexpected response from daemon".into()),
+        Ok(IpcResponse::Success { secret }) => {
+            logs::log(&app, "INFO", "Assertion verified successfully. Vault secret retrieved");
+            Ok(secret.as_str().to_string())
+        }
+        Ok(IpcResponse::Error { message }) => {
+            logs::log(&app, "ERROR", &format!("Assertion verification failed: {}", message));
+            Err(message)
+        }
+        Err(e) => {
+            let err_msg = format!("IPC connection error: {}", e);
+            logs::log(&app, "ERROR", &err_msg);
+            Err(err_msg)
+        }
+        _ => {
+            logs::log(&app, "ERROR", "Unexpected response from daemon on verify_assertion");
+            Err("Unexpected response from daemon".into())
+        }
     }
 }
