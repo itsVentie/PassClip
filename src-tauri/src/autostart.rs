@@ -2,7 +2,6 @@ use crate::logs;
 use passclip::ipc::protocol::IpcRequest;
 use passclip::ipc::server::send_client_request;
 use std::process::Command;
-use std::thread;
 use std::time::Duration;
 use tauri::AppHandle;
 
@@ -29,9 +28,23 @@ pub async fn ensure_daemon_running(app: &AppHandle) {
             logs::log(
                 app,
                 "INFO",
-                &format!("Daemon process spawned successfully (PID: {})", child.id()),
+                &format!("Daemon process spawned successfully (PID: {}). Awaiting IPC readiness...", child.id()),
             );
-            thread::sleep(Duration::from_millis(500));
+
+            let mut ready = false;
+            for _ in 0..20 {
+                tokio::time::sleep(Duration::from_millis(250)).await;
+                if send_client_request(IpcRequest::GetStatus).await.is_ok() {
+                    ready = true;
+                    break;
+                }
+            }
+
+            if ready {
+                logs::log(app, "INFO", "Daemon IPC successfully connected");
+            } else {
+                logs::log(app, "ERROR", "Daemon process spawned but IPC remained unreachable after timeout");
+            }
         }
         Err(e) => {
             logs::log(
