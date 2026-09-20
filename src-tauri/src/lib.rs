@@ -18,7 +18,7 @@ pub fn run() {
             log(&handle, "INFO", "PassClip GUI initialized");
 
             tauri::async_runtime::spawn(async move {
-                autostart::ensure_daemon_running().await;
+                autostart::ensure_daemon_running(&handle).await;
             });
 
             Ok(())
